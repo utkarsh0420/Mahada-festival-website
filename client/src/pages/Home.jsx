@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { 
   Sparkles, Flame, Clock, Calendar, MapPin, Building, QrCode, 
   Share2, ShieldCheck, Heart, AlertCircle, PhoneCall
@@ -15,6 +15,7 @@ import VisarjanCard from "../components/VisarjanCard";
 import OwnersNotice from "../components/OwnersNotice";
 import MandalRules from "../components/MandalRules";
 import EmergencyContacts from "../components/EmergencyContacts";
+import AboutMandal from "../components/AboutMandal";
 
 const Home = ({ onOpenWhatsAppQR }) => {
   const { config, loading: configLoading } = useConfig();
@@ -86,14 +87,16 @@ const Home = ({ onOpenWhatsAppQR }) => {
   const latestPinned = announcements.find((a) => a.isPinned) || announcements[0];
 
   return (
-    <div className="w-full">
+    <div id="top-section" className="w-full">
       
       {/* 1. Breaking Marquee Scroller */}
       {config?.tabs?.announcements?.enabled !== false && (
-        <MarqueeTicker
-          latestAnnouncement={latestPinned}
-          onSelectAnnouncement={(ann) => setSelectedAnnouncement(ann)}
-        />
+        <div id="marquee-section" className="scroll-mt-16">
+          <MarqueeTicker
+            latestAnnouncement={latestPinned}
+            onSelectAnnouncement={(ann) => setSelectedAnnouncement(ann)}
+          />
+        </div>
       )}
 
       {/* 2. Grand Hero Festival Showcase */}
@@ -171,18 +174,22 @@ const Home = ({ onOpenWhatsAppQR }) => {
       </section>
 
       {/* 3. Participating Wing Selector */}
-      <WingFilter
-        selectedWing={selectedWing}
-        onSelectWing={(wing) => setSelectedWing(wing)}
-      />
+      <div id="wings-section" className="scroll-mt-16">
+        <WingFilter
+          selectedWing={selectedWing}
+          onSelectWing={(wing) => setSelectedWing(wing)}
+        />
+      </div>
 
       {/* 4. PRIME REQUIREMENT: EVENT SCROLLER (Arrival, Aarti, Cultural, Prasad, Visarjan) */}
-      <EventScroller
-        events={events}
-        activeCategory={activeCategory}
-        onSelectCategory={(cat) => setActiveCategory(cat)}
-        onShareWhatsApp={handleShareWhatsApp}
-      />
+      <div id="events-section" className="scroll-mt-16">
+        <EventScroller
+          events={events}
+          activeCategory={activeCategory}
+          onSelectCategory={(cat) => setActiveCategory(cat)}
+          onShareWhatsApp={handleShareWhatsApp}
+        />
+      </div>
 
       {/* 5. Main Content Container for Approved Tabs */}
       <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-8 space-y-8">
@@ -228,6 +235,11 @@ const Home = ({ onOpenWhatsAppQR }) => {
             <EmergencyContacts contacts={contacts} />
           </div>
         )}
+
+        {/* PRIME REQUIREMENT: ABOUT MANDAL INFORMATION AT THE END OF THE PAGE */}
+        <div id="mandal-info-section">
+          <AboutMandal onShareWhatsApp={handleShareWhatsApp} />
+        </div>
 
       </div>
 

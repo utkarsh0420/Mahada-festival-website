@@ -1,4 +1,4 @@
-﻿import express from "express";
+import express from "express";
 import TabConfig from "../models/TabConfig.js";
 import { protectAdmin } from "../middleware/authMiddleware.js";
 
@@ -81,7 +81,85 @@ router.put("/general", protectAdmin, async (req, res) => {
     res.json({ success: true, message: "General configuration saved", config });
   } catch (error) {
     console.error("[Config] Error updating general settings:", error.message);
-    res.status(500).json({ success: false, message: "Failed to update general settings" });
+// Admin updates Sidebar Menu Items & Floating settings
+router.put("/sidebar", protectAdmin, async (req, res) => {
+  try {
+    const { sidebarMenu, sidebarSettings } = req.body;
+    let config = await TabConfig.findOne();
+    if (!config) {
+      config = new TabConfig();
+    }
+
+    if (sidebarMenu) {
+      config.sidebarMenu = sidebarMenu;
+    }
+    if (sidebarSettings) {
+      config.sidebarSettings = { ...config.sidebarSettings.toObject(), ...sidebarSettings };
+    }
+    config.updatedAt = Date.now();
+    await config.save();
+
+    res.json({
+      success: true,
+      message: "Sidebar configuration updated successfully",
+      sidebarMenu: config.sidebarMenu,
+      sidebarSettings: config.sidebarSettings
+    });
+  } catch (error) {
+    console.error("[Config] Error updating sidebar:", error.message);
+    res.status(500).json({ success: false, message: "Failed to update sidebar configuration" });
+  }
+});
+
+// Admin updates 10-day Aarti schedule & host buildings
+router.put("/aarti-schedule", protectAdmin, async (req, res) => {
+  try {
+    const { dailyAartiSchedule } = req.body;
+    let config = await TabConfig.findOne();
+    if (!config) {
+      config = new TabConfig();
+    }
+
+    if (dailyAartiSchedule && Array.isArray(dailyAartiSchedule)) {
+      config.dailyAartiSchedule = dailyAartiSchedule;
+    }
+    config.updatedAt = Date.now();
+    await config.save();
+
+    res.json({
+      success: true,
+      message: "Daily Aarti schedule updated successfully",
+      dailyAartiSchedule: config.dailyAartiSchedule
+    });
+  } catch (error) {
+    console.error("[Config] Error updating aarti schedule:", error.message);
+    res.status(500).json({ success: false, message: "Failed to update aarti schedule" });
+  }
+});
+
+// Admin updates Mandal info
+router.put("/mandal-info", protectAdmin, async (req, res) => {
+  try {
+    const { mandalInfo } = req.body;
+    let config = await TabConfig.findOne();
+    if (!config) {
+      config = new TabConfig();
+    }
+
+    if (mandalInfo) {
+      config.mandalInfo = { ...config.mandalInfo.toObject(), ...mandalInfo };
+    }
+    config.updatedAt = Date.now();
+    await config.save();
+
+    res.json({
+      success: true,
+      message: "Mandal information updated successfully",
+      mandalInfo: config.mandalInfo
+    });
+  } catch (error) {
+    console.error("[Config] Error updating mandal info:", error.message);
+    res.status(500).json({ success: false, message: "Failed to update mandal information" });
   }
 });
 

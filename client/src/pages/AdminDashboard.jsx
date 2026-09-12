@@ -1,6 +1,6 @@
-﻿import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { 
-  ArrowLeft, ShieldCheck, Megaphone, Calendar, Phone, Settings, Check, AlertTriangle
+  ArrowLeft, ShieldCheck, Megaphone, Calendar, Phone, Settings, Check, AlertTriangle, Menu, Flame
 } from "lucide-react";
 import { useConfig } from "../context/ConfigContext";
 import { useAuth } from "../context/AuthContext";
@@ -11,9 +11,18 @@ import AnnouncementManager from "./admin/AnnouncementManager";
 import EventManager from "./admin/EventManager";
 import ContactManager from "./admin/ContactManager";
 import GeneralSettings from "./admin/GeneralSettings";
+import SidebarManager from "./admin/SidebarManager";
+import AartiScheduleManager from "./admin/AartiScheduleManager";
 
 const AdminDashboard = ({ onClose }) => {
-  const { config, refreshConfig, updateTabs, updateGeneral } = useConfig();
+  const { 
+    config, 
+    refreshConfig, 
+    updateTabs, 
+    updateGeneral, 
+    updateSidebar, 
+    updateAartiSchedule 
+  } = useConfig();
   const { admin, logout } = useAuth();
 
   const [activeSubTab, setActiveSubTab] = useState("tabs");
@@ -155,9 +164,11 @@ const AdminDashboard = ({ onClose }) => {
         {/* Subtab Selector */}
         <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-3 mb-6 border-b border-gold-300">
           {[
-            { id: "tabs", label: "टॅब मान्यता व नियंत्रण (Tab Approvals)", icon: ShieldCheck },
+            { id: "tabs", label: "टॅब मान्यता (Tabs)", icon: ShieldCheck },
+            { id: "sidebar", label: "साइडबार नियंत्रण (Sidebar)", icon: Menu },
+            { id: "aartiSchedule", label: "१० दिवस आरती वेळापत्रक व यजमान", icon: Flame },
             { id: "announcements", label: "महत्वाच्या सूचना (Announcements)", icon: Megaphone },
-            { id: "events", label: "आरती व कार्यक्रम (Events)", icon: Calendar },
+            { id: "events", label: "कार्यक्रम (Events)", icon: Calendar },
             { id: "contacts", label: "५ विंग्ज प्रतिनिधी (Contacts)", icon: Phone },
             { id: "general", label: "स्क्रोलर व सामान्य सेटिंग्ज", icon: Settings },
           ].map((tab) => {
@@ -183,6 +194,22 @@ const AdminDashboard = ({ onClose }) => {
         {/* Tab Views */}
         {activeSubTab === "tabs" && (
           <TabApprovals config={config} onToggleTab={handleToggleTab} />
+        )}
+
+        {activeSubTab === "sidebar" && (
+          <SidebarManager
+            config={config}
+            onSaveSidebar={updateSidebar}
+            onNotify={notify}
+          />
+        )}
+
+        {activeSubTab === "aartiSchedule" && (
+          <AartiScheduleManager
+            config={config}
+            onSaveAartiSchedule={updateAartiSchedule}
+            onNotify={notify}
+          />
         )}
 
         {activeSubTab === "announcements" && (

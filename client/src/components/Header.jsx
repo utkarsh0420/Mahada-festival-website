@@ -1,9 +1,9 @@
-﻿import React, { useState } from "react";
+import React, { useState } from "react";
 import { Sparkles, ShieldCheck, LogIn, LayoutDashboard, LogOut, Menu, X, PhoneCall, QrCode } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useConfig } from "../context/ConfigContext";
 
-const Header = ({ onOpenAdminLogin, onOpenAdminDashboard, onOpenWhatsAppQR }) => {
+const Header = ({ onOpenAdminLogin, onOpenAdminDashboard, onOpenWhatsAppQR, onOpenSidebar }) => {
   const { admin, logout } = useAuth();
   const { config } = useConfig();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -16,20 +16,32 @@ const Header = ({ onOpenAdminLogin, onOpenAdminDashboard, onOpenWhatsAppQR }) =>
       <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-2.5">
         <div className="flex items-center justify-between gap-2 sm:gap-4">
           
-          {/* Logo & Mandal Title */}
-          <div className="flex items-center gap-3 sm:gap-4 cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-            <div className="relative group flex-shrink-0">
-              {/* Gold Ring Aura */}
-              <div className="absolute -inset-0.5 bg-gradient-to-r from-gold-400 to-gold-600 rounded-full blur opacity-75 group-hover:opacity-100 transition duration-300"></div>
-              <img
-                src="/logo.jpg"
-                alt="म्हाडा टॉवर्स उत्सव मंडळ लोगो"
-                className="relative w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-full object-cover border-2 border-gold-400 shadow-lg"
-                onError={(e) => {
-                  console.error("Logo failed to load");
-                }}
-              />
-            </div>
+          {/* Left: Sidebar Trigger & Logo & Mandal Title */}
+          <div className="flex items-center gap-2 sm:gap-3.5">
+            {/* PRIME REQUIREMENT: Prominent Menu Sidebar Trigger Button */}
+            <button
+              onClick={onOpenSidebar}
+              className="flex items-center gap-1.5 sm:gap-2 bg-gradient-to-r from-amber-900/90 to-maroon-800 hover:from-gold-400 hover:to-gold-500 text-gold-200 hover:text-maroon-950 font-bold text-xs sm:text-sm px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-xl border border-gold-400/60 transition-all shadow-md group transform active:scale-95"
+              title="उत्सव मेनू उघडा (Open Festival Sidebar)"
+              aria-label="Open Sidebar Menu"
+            >
+              <Menu className="w-4 h-4 sm:w-5 sm:h-5 text-gold-300 group-hover:text-maroon-950 transition-colors" />
+              <span className="hidden sm:inline font-heading">मेनू (Menu)</span>
+            </button>
+
+            <div className="flex items-center gap-2.5 sm:gap-3 cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
+              <div className="relative group flex-shrink-0">
+                {/* Gold Ring Aura */}
+                <div className="absolute -inset-0.5 bg-gradient-to-r from-gold-400 to-gold-600 rounded-full blur opacity-75 group-hover:opacity-100 transition duration-300"></div>
+                <img
+                  src="/logo.jpg"
+                  alt="म्हाडा टॉवर्स उत्सव मंडळ लोगो"
+                  className="relative w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-full object-cover border-2 border-gold-400 shadow-lg"
+                  onError={(e) => {
+                    console.error("Logo failed to load");
+                  }}
+                />
+              </div>
 
             <div>
               <div className="flex items-center gap-2">
@@ -49,6 +61,7 @@ const Header = ({ onOpenAdminLogin, onOpenAdminDashboard, onOpenWhatsAppQR }) =>
               </p>
             </div>
           </div>
+        </div>
 
           {/* Right Action Items: Live Status & Admin Access in Top Right Corner */}
           <div className="flex items-center gap-2 sm:gap-3">
@@ -123,6 +136,16 @@ const Header = ({ onOpenAdminLogin, onOpenAdminDashboard, onOpenWhatsAppQR }) =>
               <span className="text-[10px] bg-festive-saffron text-white px-2 py-0.5 rounded-full">G, H, I, J, K</span>
             </div>
             
+            <button
+              onClick={() => {
+                onOpenSidebar();
+                setMobileMenuOpen(false);
+              }}
+              className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-orange-600 to-amber-600 text-white py-2 rounded-xl text-xs font-bold shadow"
+            >
+              <Menu className="w-4 h-4" /> संपूर्ण उत्सव मेनू उघडा (Open Sidebar)
+            </button>
+
             <div className="grid grid-cols-2 gap-2 text-xs">
               <button
                 onClick={() => {

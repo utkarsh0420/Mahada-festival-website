@@ -1,4 +1,4 @@
-﻿import TabConfig from "../models/TabConfig.js";
+import TabConfig from "../models/TabConfig.js";
 import Announcement from "../models/Announcement.js";
 import FestivalEvent from "../models/FestivalEvent.js";
 import Contact from "../models/Contact.js";
@@ -20,35 +20,30 @@ export const seedInitialData = async () => {
     }
 
     // 2. Seed TabConfig
-    const existingConfig = await TabConfig.findOne();
+    let existingConfig = await TabConfig.findOne();
     if (!existingConfig) {
       const config = new TabConfig({
         mandalNameMr: "म्हाडा टॉवर्स उत्सव मंडळ",
         mandalNameEn: "MHADA Towers Utsav Mandal",
         addressMr: "पिंपरी वाघेरे, पिंपरी चिंचवड, पुणे - ४११०१७",
         regNo: "१२४३/२०२५ - पुणे",
-        festivalYear: "२०२५ - २०२६",
+        festivalYear: "२०२६",
         festivalStatus: "उत्सव सुरू आहे (Festival Live)",
-        marqueeText: "गणपती बाप्पा मोरया! दैनिक महाआरती सकाळी ८:३० व रात्री ८:०० वाजता | महाप्रसाद वाटप ५व्या दिवशी दुपारी १२:३० पासून सुरू | सर्व ५ इमारतींच्या (G, H, I, J, K) भाविकांनी उपस्थित राहावे.",
+        marqueeText: "गणपती बाप्पा मोरया! दैनिक महाआरती सकाळी ८:३० व रात्री ८:०० वाजता | आजची महाआरती इमारत G विंग यजमान | सर्व भाविकांनी आरतीला उपस्थित राहावे.",
         marqueeActive: true,
         participatingWings: ["G", "H", "I", "J", "K"],
         whatsAppCommunityLink: "https://chat.whatsapp.com/sample-mhada-towers-ganpati",
-        emergencyHelpline: "+91 98220 11223",
-        tabs: {
-          arrival: { enabled: true, approved: true, labelMr: "श्रींचे आगमन", labelEn: "Ganpati Arrival", order: 1 },
-          aarti: { enabled: true, approved: true, labelMr: "दैनिक महाआरती", labelEn: "Aarti Timings", order: 2 },
-          cultural: { enabled: true, approved: true, labelMr: "सांस्कृतिक कार्यक्रम", labelEn: "Cultural Programs", order: 3 },
-          prasad: { enabled: true, approved: true, labelMr: "महाप्रसाद", labelEn: "Maha Prasad", order: 4 },
-          visarjan: { enabled: true, approved: true, labelMr: "विसर्जन सोहळा", labelEn: "Visarjan Timings", order: 5 },
-          announcements: { enabled: true, approved: true, labelMr: "महत्वाच्या सूचना", labelEn: "Announcements", order: 6 },
-          ownersNotice: { enabled: true, approved: true, labelMr: "वर्गणी व सभा अपडेट", labelEn: "Owners & Mandal Info", order: 7 },
-          rules: { enabled: true, approved: true, labelMr: "मंडळ नियमावली", labelEn: "Society Rules", order: 8 },
-          whatsapp: { enabled: true, approved: true, labelMr: "व्हॉट्सॲप कम्युनिटी", labelEn: "WhatsApp Community", order: 9 },
-          contacts: { enabled: true, approved: true, labelMr: "संपर्क व मदत केंद्र", labelEn: "Emergency & Committee", order: 10 }
-        }
+        emergencyHelpline: "+91 98220 11223"
       });
       await config.save();
-      console.log("[Seed] TabConfig initialized.");
+      console.log("[Seed] TabConfig initialized with sidebar and daily aarti schedule.");
+    } else if (!existingConfig.sidebarMenu || existingConfig.sidebarMenu.length === 0) {
+      existingConfig.set("sidebarMenu", undefined);
+      existingConfig.set("sidebarSettings", undefined);
+      existingConfig.set("dailyAartiSchedule", undefined);
+      existingConfig.set("mandalInfo", undefined);
+      await existingConfig.save();
+      console.log("[Seed] TabConfig refreshed with default sidebar and aarti schedule.");
     }
 
     // 3. Seed Events if empty
