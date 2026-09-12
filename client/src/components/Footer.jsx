@@ -1,17 +1,19 @@
-﻿import React from "react";
-import { Sparkles, Heart, Shield, Lock } from "lucide-react";
+import React from "react";
+import { Sparkles, Heart, Shield, Lock, Mail, Building2, Phone } from "lucide-react";
 import { useConfig } from "../context/ConfigContext";
+import { useLanguage } from "../context/LanguageContext";
 
 const Footer = ({ onOpenAdminLogin }) => {
   const { config } = useConfig();
+  const { language, t } = useLanguage();
 
   return (
-    <footer className="bg-gradient-to-b from-maroon-950 via-maroon-900 to-[#1e0205] text-white border-t-2 border-gold-500/70 pt-10 pb-6 px-4">
+    <footer className="bg-gradient-to-b from-maroon-950 via-maroon-900 to-[#180104] text-white border-t-2 border-gold-500/80 pt-10 pb-6 px-4">
       <div className="max-w-7xl mx-auto">
         
         {/* Divine Shloka Banner */}
         <div className="text-center pb-8 border-b border-gold-500/20 max-w-2xl mx-auto">
-          <p className="text-sm sm:text-base text-gold-300 font-heading font-medium tracking-wide">
+          <p className="text-base sm:text-lg text-gold-300 font-heading font-bold tracking-wide">
             ॥ वक्रतुण्ड महाकाय सूर्यकोटि समप्रभ । निर्विघ्नं कुरु मे देव सर्वकार्येषु सर्वदा ॥
           </p>
           <div className="flex items-center justify-center gap-2 mt-2">
@@ -28,31 +30,39 @@ const Footer = ({ onOpenAdminLogin }) => {
             <img
               src="/logo.jpg"
               alt="म्हाडा टॉवर्स उत्सव मंडळ"
-              className="w-16 h-16 rounded-full border-2 border-gold-400 shadow-md object-cover flex-shrink-0"
+              className="w-16 h-16 rounded-full border-2 border-gold-400 shadow-lg object-cover flex-shrink-0"
             />
             <div>
-              <h4 className="text-lg font-bold text-gold-200 font-heading">
-                {config?.mandalNameMr || "म्हाडा टॉवर्स उत्सव मंडळ"}
+              <h4 className="text-base sm:text-lg font-black text-gold-200 font-heading">
+                {language === "mr" 
+                  ? (config?.mandalNameMr || "म्हाडा टॉवर्स उत्सव मंडळ")
+                  : (config?.mandalNameEn || "MHADA Towers Utsav Mandal")}
               </h4>
               <p className="text-xs text-gold-100/80 mt-0.5">
                 {config?.addressMr || "पिंपरी वाघेरे, पिंपरी चिंचवड, पुणे - ४११०१७"}
               </p>
-              <p className="text-[11px] text-festive-saffron font-semibold mt-1">
+              <p className="text-[11px] text-festive-saffron font-bold mt-1">
                 {config?.regNo ? `नोंदणी क्र: ${config.regNo}` : "नोंदणी क्र: १२४३/२०२५ - पुणे"}
               </p>
             </div>
           </div>
 
-          {/* 5 Participating Buildings Info */}
+          {/* 4 Participating Buildings Info */}
           <div className="text-center">
-            <div className="inline-block bg-maroon-850 px-4 py-2 rounded-xl border border-gold-500/30">
-              <span className="text-xs text-gold-300 font-semibold block">सहभागी ५ इमारतींची एकता</span>
-              <span className="text-sm font-bold text-white tracking-widest mt-1 block">
-                [ G • H • I • J • K ] WINGS
+            <div className="inline-block bg-maroon-850 px-5 py-3 rounded-2xl border border-gold-500/40 shadow-inner">
+              <span className="text-xs text-gold-300 font-bold block uppercase tracking-wide">
+                {language === "mr" ? "सहभागी ४ इमारतींची एकता" : "Unity of 4 Buildings"}
               </span>
-              <span className="text-[10px] text-gray-300 block mt-0.5">
-                सर्व मालक व भाडेकरू बांधवांसाठी अधिकृत डिजिटल हब
+              <span className="text-xs sm:text-sm font-black text-white tracking-wide mt-1 block font-heading">
+                G (नंदादेवी) • H (निलगिरी) • J (पूर्वांचल) • K (गोवर्धन)
               </span>
+              <a 
+                href="mailto:mhadatowersutsav@gmail.com" 
+                className="text-[11px] text-gold-300/90 hover:text-white flex items-center justify-center gap-1 mt-1.5 underline"
+              >
+                <Mail className="w-3 h-3" />
+                <span>mhadatowersutsav@gmail.com</span>
+              </a>
             </div>
           </div>
 
@@ -60,13 +70,13 @@ const Footer = ({ onOpenAdminLogin }) => {
           <div className="flex flex-col items-center md:items-end gap-2 text-xs">
             <button
               onClick={onOpenAdminLogin}
-              className="inline-flex items-center gap-1.5 text-gold-300 hover:text-white bg-maroon-850 hover:bg-maroon-800 px-3 py-1.5 rounded-lg border border-gold-500/40 transition"
+              className="inline-flex items-center gap-1.5 text-gold-300 hover:text-white bg-maroon-850 hover:bg-maroon-800 px-3.5 py-2 rounded-xl border border-gold-500/40 transition shadow-sm"
             >
               <Lock className="w-3.5 h-3.5 text-gold-400" />
-              <span>व्यवस्थापक कक्ष (Admin Login)</span>
+              <span>{t("adminLogin")}</span>
             </button>
             <p className="text-[11px] text-gray-400">
-              सोसायटी ईमेल किंवा गुगलने सुरक्षित लॉगिन
+              सोसायटी ईमेलने सुरक्षित व्यवस्थापक प्रवेश
             </p>
           </div>
 
@@ -75,7 +85,7 @@ const Footer = ({ onOpenAdminLogin }) => {
         {/* Bottom copyright */}
         <div className="pt-6 border-t border-gold-500/20 flex flex-col sm:flex-row items-center justify-between gap-2 text-[11px] text-gray-400 text-center">
           <p>© २०२५ - २०२६ {config?.mandalNameMr || "म्हाडा टॉवर्स उत्सव मंडळ, पिंपरी वाघेरे, पुणे"}. सर्व हक्क सुरक्षित.</p>
-          <p className="flex items-center gap-1 text-gold-400/80">
+          <p className="flex items-center gap-1 text-gold-400/80 font-medium">
             <span>डिजिटल महाराष्ट्र • बाप्पांची सेवा</span>
           </p>
         </div>

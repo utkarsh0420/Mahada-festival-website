@@ -67,7 +67,7 @@ const tabConfigSchema = new mongoose.Schema({
   marqueeActive: { type: Boolean, default: true },
   participatingWings: {
     type: [String],
-    default: ["G", "H", "I", "J", "K"]
+    default: ["G", "H", "J", "K"]
   },
   whatsAppCommunityLink: {
     type: String,
@@ -92,11 +92,11 @@ const tabConfigSchema = new mongoose.Schema({
     },
     prasad: {
       type: tabSettingSchema,
-      default: { enabled: true, approved: true, labelMr: "महाप्रसाद", labelEn: "Maha Prasad", order: 4 }
+      default: { enabled: false, approved: false, labelMr: "महाप्रसाद", labelEn: "Maha Prasad", order: 4 }
     },
     visarjan: {
       type: tabSettingSchema,
-      default: { enabled: true, approved: true, labelMr: "विसर्जन सोहळा", labelEn: "Visarjan Timings", order: 5 }
+      default: { enabled: false, approved: false, labelMr: "विसर्जन सोहळा", labelEn: "Visarjan Timings", order: 5 }
     },
     announcements: {
       type: tabSettingSchema,
@@ -104,7 +104,7 @@ const tabConfigSchema = new mongoose.Schema({
     },
     ownersNotice: {
       type: tabSettingSchema,
-      default: { enabled: true, approved: true, labelMr: "वर्गणी व सभा अपडेट", labelEn: "Owners & Mandal Info", order: 7 }
+      default: { enabled: false, approved: false, labelMr: "वर्गणी व सभा अपडेट", labelEn: "Owners & Mandal Info", order: 7 }
     },
     rules: {
       type: tabSettingSchema,

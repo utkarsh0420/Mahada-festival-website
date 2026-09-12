@@ -81,6 +81,10 @@ router.put("/general", protectAdmin, async (req, res) => {
     res.json({ success: true, message: "General configuration saved", config });
   } catch (error) {
     console.error("[Config] Error updating general settings:", error.message);
+    res.status(500).json({ success: false, message: "Failed to update general configuration" });
+  }
+});
+
 // Admin updates Sidebar Menu Items & Floating settings
 router.put("/sidebar", protectAdmin, async (req, res) => {
   try {

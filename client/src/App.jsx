@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { ConfigProvider, useConfig } from "./context/ConfigContext";
+import { LanguageProvider, useLanguage } from "./context/LanguageContext";
 
 import Header from "./components/Header";
 import Footer from "./components/Footer";
@@ -9,7 +10,7 @@ import AdminDashboard from "./pages/AdminDashboard";
 import AdminLoginModal from "./components/AdminLoginModal";
 import WhatsAppJoinModal from "./components/WhatsAppJoinModal";
 import Sidebar from "./components/Sidebar";
-import FloatingMenuTrigger from "./components/FloatingMenuTrigger";
+import AIBappaChatbot from "./components/AIBappaChatbot";
 import { 
   ResidentPollsModal, 
   VolunteerSevaModal, 
@@ -20,6 +21,7 @@ import {
 const MainApp = () => {
   const { admin } = useAuth();
   const { config, loading } = useConfig();
+  const { language } = useLanguage();
 
   const [isAdminDashboardOpen, setIsAdminDashboardOpen] = useState(false);
   const [isAdminLoginModalOpen, setIsAdminLoginModalOpen] = useState(false);
@@ -42,7 +44,9 @@ const MainApp = () => {
           </div>
         </div>
         <p className="mt-4 font-heading font-bold text-sm tracking-wide">
-          म्हाडा टॉवर्स उत्सव मंडळ माहिती केंद्र लोड होत आहे...
+          {language === "mr" 
+            ? "म्हाडा टॉवर्स उत्सव मंडळ माहिती केंद्र लोड होत आहे..." 
+            : "Loading MHADA Towers Festival Portal..."}
         </p>
       </div>
     );
@@ -87,9 +91,11 @@ const MainApp = () => {
     else if (targetSection === "announcements") elementId = "marquee-section";
     else if (targetSection === "events") elementId = "events-section";
     else if (targetSection === "aarti") elementId = "aarti-section";
-    else if (targetSection === "owners") elementId = "owners-section";
-    else if (targetSection === "mandal-info") elementId = "mandal-info-section";
+    else if (targetSection === "schedule") elementId = "schedule-section";
+    else if (targetSection === "upcoming") elementId = "upcoming-section";
+    else if (targetSection === "gallery") elementId = "gallery-section";
     else if (targetSection === "contacts") elementId = "contacts-section";
+    else if (targetSection === "mandal-info") elementId = "mandal-info-section";
 
     if (elementId) {
       const el = document.getElementById(elementId);
@@ -104,7 +110,7 @@ const MainApp = () => {
   return (
     <div className="min-h-screen flex flex-col bg-[#FFFDF9] relative">
       
-      {/* Off-canvas Festive Sidebar matching user screenshot */}
+      {/* Off-canvas Festive Sidebar */}
       <Sidebar
         isOpen={isSidebarOpen}
         onClose={() => setIsSidebarOpen(false)}
@@ -113,12 +119,7 @@ const MainApp = () => {
         onOpenAdminDashboard={() => setIsAdminDashboardOpen(true)}
       />
 
-      {/* Floating Side Button for quick sidebar access */}
-      <FloatingMenuTrigger
-        onOpenSidebar={() => setIsSidebarOpen(true)}
-      />
-
-      {/* Top Header with Logo, Main Menu Button, and Admin Access */}
+      {/* Top Header with Logo, Navigation Links, Society Email, Language Switcher, and Admin Access */}
       <Header
         onOpenSidebar={() => setIsSidebarOpen(true)}
         onOpenAdminLogin={() => setIsAdminLoginModalOpen(true)}
@@ -130,10 +131,11 @@ const MainApp = () => {
       <main className="flex-1">
         <Home
           onOpenWhatsAppQR={() => setIsWhatsAppQROpen(true)}
+          onOpenSidebar={() => setIsSidebarOpen(true)}
         />
       </main>
 
-      {/* Official Footer */}
+      {/* Official Footer with 4 Building Names & Society Email */}
       <Footer
         onOpenAdminLogin={() => {
           if (admin) setIsAdminDashboardOpen(true);
@@ -141,7 +143,10 @@ const MainApp = () => {
         }}
       />
 
-      {/* Admin Login Modal (Triggered from Top Right Button or Sidebar) */}
+      {/* + ADDED: AI BAPPA CHATBOT FLOATING WIDGET (Image 2 Requirement) */}
+      <AIBappaChatbot />
+
+      {/* Admin Login Modal */}
       <AdminLoginModal
         isOpen={isAdminLoginModalOpen}
         onClose={() => setIsAdminLoginModalOpen(false)}
@@ -157,7 +162,7 @@ const MainApp = () => {
         onClose={() => setIsWhatsAppQROpen(false)}
       />
 
-      {/* Interactive Feature Modals Triggered from Sidebar */}
+      {/* Interactive Feature Modals */}
       <ResidentPollsModal
         isOpen={isPollsOpen}
         onClose={() => setIsPollsOpen(false)}
@@ -186,7 +191,9 @@ const App = () => {
   return (
     <AuthProvider>
       <ConfigProvider>
-        <MainApp />
+        <LanguageProvider>
+          <MainApp />
+        </LanguageProvider>
       </ConfigProvider>
     </AuthProvider>
   );
