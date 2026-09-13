@@ -14,8 +14,8 @@ router.get("/", async (req, res) => {
     }
     res.json({ success: true, config });
   } catch (error) {
-    console.error("[Config] Error fetching config:", error.message);
-    res.status(500).json({ success: false, message: "Error fetching configuration" });
+    console.warn("[Config] Offline mode active, returning default config:", error.message);
+    res.json({ success: true, config: new TabConfig() });
   }
 });
 

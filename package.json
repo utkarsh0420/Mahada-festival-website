@@ -1,12 +1,15 @@
-﻿{
+{
   "name": "mhada-towers-utsav-mandal",
   "version": "1.0.0",
   "description": "MHADA Towers Utsav Mandal - Ganpati Digital Information Hub (MERN Stack)",
   "scripts": {
-    "server": "cd server && npm start",
-    "client": "cd client && npm run dev",
-    "build": "cd client && npm run build",
-    "seed": "cd server && node -e \"import('./seed/seedData.js').then(m => m.seedInitialData())\""
+    "dev": "npm run dev --prefix client",
+    "start": "npm run dev --prefix client",
+    "client": "npm run dev --prefix client",
+    "server": "npm start --prefix server",
+    "server:dev": "npm run dev --prefix server",
+    "build": "npm run build --prefix client",
+    "seed": "npm run seed --prefix server"
   },
   "keywords": ["mern", "ganpati", "utsav", "newsletter", "scroller", "pune", "mhada"],
   "author": "MHADA Towers Utsav Mandal Committee"
