@@ -1,21 +1,50 @@
 import express from "express";
 import TabConfig from "../models/TabConfig.js";
 import { protectAdmin } from "../middleware/authMiddleware.js";
+import { checkDbConnected } from "../config/db.js";
 
 const router = express.Router();
+
+let memoryConfig = new TabConfig();
+
+const getConfigDocument = async () => {
+  if (checkDbConnected()) {
+    try {
+      let config = await TabConfig.findOne();
+      if (!config) {
+        config = new TabConfig();
+        await config.save();
+      }
+      return config;
+    } catch (err) {
+      console.warn("[Config] DB read failed, falling back to memory config:", err.message);
+    }
+  }
+  return memoryConfig;
+};
+
+const saveConfigDocument = async (config) => {
+  config.updatedAt = Date.now();
+  if (checkDbConnected() && typeof config.save === "function") {
+    try {
+      await config.save();
+      return true;
+    } catch (err) {
+      console.warn("[Config] DB save failed, persisting to memory config:", err.message);
+    }
+  }
+  memoryConfig = config;
+  return true;
+};
 
 // GET Public Config
 router.get("/", async (req, res) => {
   try {
-    let config = await TabConfig.findOne();
-    if (!config) {
-      config = new TabConfig();
-      await config.save();
-    }
+    const config = await getConfigDocument();
     res.json({ success: true, config });
   } catch (error) {
-    console.warn("[Config] Offline mode active, returning default config:", error.message);
-    res.json({ success: true, config: new TabConfig() });
+    console.warn("[Config] Offline mode active, returning memory config:", error.message);
+    res.json({ success: true, config: memoryConfig });
   }
 });
 
@@ -23,16 +52,13 @@ router.get("/", async (req, res) => {
 router.put("/tabs", protectAdmin, async (req, res) => {
   try {
     const { tabs } = req.body;
-    let config = await TabConfig.findOne();
-    if (!config) {
-      config = new TabConfig();
-    }
+    let config = await getConfigDocument();
 
     if (tabs) {
-      config.tabs = { ...config.tabs.toObject(), ...tabs };
+      const existingTabs = config.tabs?.toObject ? config.tabs.toObject() : config.tabs;
+      config.tabs = { ...existingTabs, ...tabs };
     }
-    config.updatedAt = Date.now();
-    await config.save();
+    await saveConfigDocument(config);
 
     res.json({ success: true, message: "Tabs updated successfully", tabs: config.tabs });
   } catch (error) {
@@ -58,10 +84,7 @@ router.put("/general", protectAdmin, async (req, res) => {
       emergencyHelpline
     } = req.body;
 
-    let config = await TabConfig.findOne();
-    if (!config) {
-      config = new TabConfig();
-    }
+    let config = await getConfigDocument();
 
     if (mandalNameMr !== undefined) config.mandalNameMr = mandalNameMr;
     if (mandalNameEn !== undefined) config.mandalNameEn = mandalNameEn;
@@ -75,8 +98,7 @@ router.put("/general", protectAdmin, async (req, res) => {
     if (whatsAppCommunityLink !== undefined) config.whatsAppCommunityLink = whatsAppCommunityLink;
     if (emergencyHelpline !== undefined) config.emergencyHelpline = emergencyHelpline;
 
-    config.updatedAt = Date.now();
-    await config.save();
+    await saveConfigDocument(config);
 
     res.json({ success: true, message: "General configuration saved", config });
   } catch (error) {
@@ -89,16 +111,13 @@ router.put("/general", protectAdmin, async (req, res) => {
 router.put("/newsletter", protectAdmin, async (req, res) => {
   try {
     const { newsletter } = req.body;
-    let config = await TabConfig.findOne();
-    if (!config) {
-      config = new TabConfig();
-    }
+    let config = await getConfigDocument();
 
     if (newsletter) {
-      config.newsletter = { ...config.newsletter.toObject(), ...newsletter };
+      const existing = config.newsletter?.toObject ? config.newsletter.toObject() : config.newsletter;
+      config.newsletter = { ...existing, ...newsletter };
     }
-    config.updatedAt = Date.now();
-    await config.save();
+    await saveConfigDocument(config);
 
     res.json({
       success: true,
@@ -115,17 +134,13 @@ router.put("/newsletter", protectAdmin, async (req, res) => {
 router.put("/wings", protectAdmin, async (req, res) => {
   try {
     const { wings } = req.body;
-    let config = await TabConfig.findOne();
-    if (!config) {
-      config = new TabConfig();
-    }
+    let config = await getConfigDocument();
 
     if (Array.isArray(wings)) {
       config.wings = wings;
       config.participatingWings = wings.map(w => w.code);
     }
-    config.updatedAt = Date.now();
-    await config.save();
+    await saveConfigDocument(config);
 
     res.json({
       success: true,
@@ -142,16 +157,12 @@ router.put("/wings", protectAdmin, async (req, res) => {
 router.put("/rules", protectAdmin, async (req, res) => {
   try {
     const { rules } = req.body;
-    let config = await TabConfig.findOne();
-    if (!config) {
-      config = new TabConfig();
-    }
+    let config = await getConfigDocument();
 
     if (Array.isArray(rules)) {
       config.rules = rules;
     }
-    config.updatedAt = Date.now();
-    await config.save();
+    await saveConfigDocument(config);
 
     res.json({
       success: true,
@@ -168,16 +179,12 @@ router.put("/rules", protectAdmin, async (req, res) => {
 router.put("/gallery", protectAdmin, async (req, res) => {
   try {
     const { gallery } = req.body;
-    let config = await TabConfig.findOne();
-    if (!config) {
-      config = new TabConfig();
-    }
+    let config = await getConfigDocument();
 
     if (Array.isArray(gallery)) {
       config.gallery = gallery;
     }
-    config.updatedAt = Date.now();
-    await config.save();
+    await saveConfigDocument(config);
 
     res.json({
       success: true,
@@ -194,16 +201,13 @@ router.put("/gallery", protectAdmin, async (req, res) => {
 router.put("/poll", protectAdmin, async (req, res) => {
   try {
     const { poll } = req.body;
-    let config = await TabConfig.findOne();
-    if (!config) {
-      config = new TabConfig();
-    }
+    let config = await getConfigDocument();
 
     if (poll) {
-      config.poll = { ...config.poll.toObject(), ...poll };
+      const existing = config.poll?.toObject ? config.poll.toObject() : config.poll;
+      config.poll = { ...existing, ...poll };
     }
-    config.updatedAt = Date.now();
-    await config.save();
+    await saveConfigDocument(config);
 
     res.json({
       success: true,
@@ -220,7 +224,7 @@ router.put("/poll", protectAdmin, async (req, res) => {
 router.post("/poll/vote", async (req, res) => {
   try {
     const { optionId } = req.body;
-    let config = await TabConfig.findOne();
+    let config = await getConfigDocument();
     if (!config || !config.poll || !config.poll.options) {
       return res.status(404).json({ success: false, message: "Active poll not found" });
     }
@@ -231,8 +235,10 @@ router.post("/poll/vote", async (req, res) => {
     }
 
     opt.votes = (opt.votes || 0) + 1;
-    config.markModified("poll");
-    await config.save();
+    if (typeof config.markModified === "function") {
+      config.markModified("poll");
+    }
+    await saveConfigDocument(config);
 
     res.json({
       success: true,
@@ -249,16 +255,13 @@ router.post("/poll/vote", async (req, res) => {
 router.put("/volunteer", protectAdmin, async (req, res) => {
   try {
     const { volunteerSeva } = req.body;
-    let config = await TabConfig.findOne();
-    if (!config) {
-      config = new TabConfig();
-    }
+    let config = await getConfigDocument();
 
     if (volunteerSeva) {
-      config.volunteerSeva = { ...config.volunteerSeva.toObject(), ...volunteerSeva };
+      const existing = config.volunteerSeva?.toObject ? config.volunteerSeva.toObject() : config.volunteerSeva;
+      config.volunteerSeva = { ...existing, ...volunteerSeva };
     }
-    config.updatedAt = Date.now();
-    await config.save();
+    await saveConfigDocument(config);
 
     res.json({
       success: true,
@@ -275,19 +278,16 @@ router.put("/volunteer", protectAdmin, async (req, res) => {
 router.put("/sidebar", protectAdmin, async (req, res) => {
   try {
     const { sidebarMenu, sidebarSettings } = req.body;
-    let config = await TabConfig.findOne();
-    if (!config) {
-      config = new TabConfig();
-    }
+    let config = await getConfigDocument();
 
     if (sidebarMenu) {
       config.sidebarMenu = sidebarMenu;
     }
     if (sidebarSettings) {
-      config.sidebarSettings = { ...config.sidebarSettings.toObject(), ...sidebarSettings };
+      const existing = config.sidebarSettings?.toObject ? config.sidebarSettings.toObject() : config.sidebarSettings;
+      config.sidebarSettings = { ...existing, ...sidebarSettings };
     }
-    config.updatedAt = Date.now();
-    await config.save();
+    await saveConfigDocument(config);
 
     res.json({
       success: true,
@@ -305,16 +305,12 @@ router.put("/sidebar", protectAdmin, async (req, res) => {
 router.put("/aarti-schedule", protectAdmin, async (req, res) => {
   try {
     const { dailyAartiSchedule } = req.body;
-    let config = await TabConfig.findOne();
-    if (!config) {
-      config = new TabConfig();
-    }
+    let config = await getConfigDocument();
 
     if (dailyAartiSchedule && Array.isArray(dailyAartiSchedule)) {
       config.dailyAartiSchedule = dailyAartiSchedule;
     }
-    config.updatedAt = Date.now();
-    await config.save();
+    await saveConfigDocument(config);
 
     res.json({
       success: true,
@@ -331,16 +327,13 @@ router.put("/aarti-schedule", protectAdmin, async (req, res) => {
 router.put("/mandal-info", protectAdmin, async (req, res) => {
   try {
     const { mandalInfo } = req.body;
-    let config = await TabConfig.findOne();
-    if (!config) {
-      config = new TabConfig();
-    }
+    let config = await getConfigDocument();
 
     if (mandalInfo) {
-      config.mandalInfo = { ...config.mandalInfo.toObject(), ...mandalInfo };
+      const existing = config.mandalInfo?.toObject ? config.mandalInfo.toObject() : config.mandalInfo;
+      config.mandalInfo = { ...existing, ...mandalInfo };
     }
-    config.updatedAt = Date.now();
-    await config.save();
+    await saveConfigDocument(config);
 
     res.json({
       success: true,

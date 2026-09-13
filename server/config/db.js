@@ -1,9 +1,10 @@
 import mongoose from "mongoose";
 
-// Disable buffering so queries fail/fallback instantly if DB is offline
-mongoose.set("bufferCommands", false);
-
 export let isDbConnected = false;
+
+export const checkDbConnected = () => {
+  return isDbConnected && mongoose.connection.readyState === 1;
+};
 
 const connectDB = async () => {
   try {
@@ -16,7 +17,7 @@ const connectDB = async () => {
     return true;
   } catch (error) {
     console.warn(`[MongoDB] Offline notice: Local MongoDB not detected (${error.message}).`);
-    console.warn(`[MongoDB] Running in standalone offline mode (all public features remain active).`);
+    console.warn(`[MongoDB] Running in standalone offline mode (all public and admin features remain fully active).`);
     isDbConnected = false;
     return false;
   }
