@@ -1,10 +1,10 @@
-﻿import React, { useState } from "react";
+import React, { useState } from "react";
 import { X, Lock, Mail, ShieldAlert, CheckCircle, ArrowRight } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 
 const AdminLoginModal = ({ isOpen, onClose, onSuccess }) => {
   const { login, googleLogin } = useAuth();
-  const [email, setEmail] = useState("mhadatowersutsav@gmail.com");
+  const [email, setEmail] = useState("mhadatowersutsavmandal@gmail.com");
   const [password, setPassword] = useState("MhadaGanpati@2025");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -33,7 +33,7 @@ const AdminLoginModal = ({ isOpen, onClose, onSuccess }) => {
     setIsLoading(true);
 
     const res = await googleLogin({
-      email: "mhadatowersutsav@gmail.com",
+      email: "mhadatowersutsavmandal@gmail.com",
       name: "म्हाडा उत्सव मंडळ कमिटी (Google Society Account)",
       googleId: "google-oauth-society"
     });
@@ -130,7 +130,7 @@ const AdminLoginModal = ({ isOpen, onClose, onSuccess }) => {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="mhadatowersutsav@gmail.com"
+                  placeholder="mhadatowersutsavmandal@gmail.com"
                   required
                   className="w-full pl-9 pr-3 py-2 text-xs sm:text-sm rounded-xl border border-gray-300 focus:border-gold-500 focus:ring-1 focus:ring-gold-500 outline-none"
                 />
@@ -174,7 +174,7 @@ const AdminLoginModal = ({ isOpen, onClose, onSuccess }) => {
           {/* Helper Credentials Hint */}
           <div className="mt-4 p-2.5 bg-amber-50 rounded-lg border border-amber-200 text-[11px] text-maroon-900">
             <span className="font-bold">प्रात्यक्षिक प्रवेश माहिती:</span>
-            <div className="text-gray-600">ईमेल: <code className="text-maroon-850 font-semibold">mhadatowersutsav@gmail.com</code></div>
+            <div className="text-gray-600">ईमेल: <code className="text-maroon-850 font-semibold">mhadatowersutsavmandal@gmail.com</code></div>
             <div className="text-gray-600">पासवर्ड: <code className="text-maroon-850 font-semibold">MhadaGanpati@2025</code></div>
           </div>
 

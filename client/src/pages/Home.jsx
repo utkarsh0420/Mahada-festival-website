@@ -1,23 +1,26 @@
-﻿import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { 
   Sparkles, Flame, Clock, Calendar, MapPin, Building, QrCode, 
   Share2, ShieldCheck, Heart, AlertCircle, PhoneCall
 } from "lucide-react";
 import { useConfig } from "../context/ConfigContext";
+import { useLanguage } from "../context/LanguageContext";
 import API from "../services/api";
 
 import MarqueeTicker from "../components/MarqueeTicker";
-import WingFilter from "../components/WingFilter";
+import DailyNewsletter from "../components/DailyNewsletter";
 import EventScroller from "../components/EventScroller";
 import AartiCard from "../components/AartiCard";
-import MahaprasadCard from "../components/MahaprasadCard";
-import VisarjanCard from "../components/VisarjanCard";
-import OwnersNotice from "../components/OwnersNotice";
+import TenDaysSchedule from "../components/TenDaysSchedule";
+import UpcomingEvents from "../components/UpcomingEvents";
+import PhotoGallery from "../components/PhotoGallery";
 import MandalRules from "../components/MandalRules";
 import EmergencyContacts from "../components/EmergencyContacts";
+import AboutMandal from "../components/AboutMandal";
 
-const Home = ({ onOpenWhatsAppQR }) => {
-  const { config, loading: configLoading } = useConfig();
+const Home = ({ onOpenWhatsAppQR, onOpenSidebar, onOpenUpcomingCalendar }) => {
+  const { config } = useConfig();
+  const { language, t } = useLanguage();
 
   const [selectedWing, setSelectedWing] = useState("All");
   const [activeCategory, setActiveCategory] = useState("all");
@@ -41,7 +44,7 @@ const Home = ({ onOpenWhatsAppQR }) => {
         setEvents(res.data.data);
       }
     } catch (err) {
-      console.error(err);
+      console.error("Events fetch error:", err);
     }
   };
 
@@ -54,7 +57,7 @@ const Home = ({ onOpenWhatsAppQR }) => {
         setAnnouncements(res.data.data);
       }
     } catch (err) {
-      console.error(err);
+      console.error("Announcements fetch error:", err);
     }
   };
 
@@ -65,19 +68,19 @@ const Home = ({ onOpenWhatsAppQR }) => {
         setContacts(res.data.data);
       }
     } catch (err) {
-      console.error(err);
+      console.error("Contacts fetch error:", err);
     }
   };
 
-  // WhatsApp Share helper for timings
+  // WhatsApp Share helper
   const handleShareWhatsApp = (item) => {
     const text = encodeURIComponent(
-      `🚩 *${config?.mandalNameMr || "म्हाडा टॉवर्स उत्सव मंडळ, पिंपरी वाघेरे"}*\n\n` +
-      `📌 *${item.titleMr || "कार्यक्रम"}*\n` +
-      `⏰ *वेळ:* ${item.time || ""}\n` +
+      `🚩 *${language === "mr" ? (config?.mandalNameMr || "म्हाडा टॉवर्स उत्सव मंडळ, पिंपरी वाघेरे") : (config?.mandalNameEn || "MHADA Towers Utsav Mandal")}*\n\n` +
+      `📌 *${item.titleMr || item.titleEn || "कार्यक्रम"}*\n` +
+      `⏰ *वेळ/तारीख:* ${item.time || ""}\n` +
       `📍 *ठिकाण:* ${item.venue || "मुख्य मंडप, म्हाडा टॉवर्स"}\n` +
       (item.descriptionMr ? `📝 *तपशील:* ${item.descriptionMr}\n\n` : "\n") +
-      `सर्व ५ इमारतींच्या (G, H, I, J, K) भाविकांनी उपस्थित राहावे.\n` +
+      `सहभागी ४ इमारती: G (नंदादेवी) • H (निलगिरी) • J (पूर्वांचल) • K (गोवर्धन)\n` +
       `गणपती बाप्पा मोरया! 🌸`
     );
     window.open(`https://api.whatsapp.com/send?text=${text}`, "_blank");
@@ -86,157 +89,89 @@ const Home = ({ onOpenWhatsAppQR }) => {
   const latestPinned = announcements.find((a) => a.isPinned) || announcements[0];
 
   return (
-    <div className="w-full">
+    <div id="top-section" className="w-full">
       
       {/* 1. Breaking Marquee Scroller */}
       {config?.tabs?.announcements?.enabled !== false && (
-        <MarqueeTicker
-          latestAnnouncement={latestPinned}
-          onSelectAnnouncement={(ann) => setSelectedAnnouncement(ann)}
-        />
+        <div id="marquee-section" className="scroll-mt-16">
+          <MarqueeTicker
+            latestAnnouncement={latestPinned}
+            onSelectAnnouncement={(ann) => setSelectedAnnouncement(ann)}
+            onOpenSidebar={onOpenSidebar}
+          />
+        </div>
       )}
 
-      {/* 2. Grand Hero Festival Showcase */}
-      <section className="relative overflow-hidden bg-gradient-to-b from-maroon-950 via-maroon-900 to-maroon-850 text-white py-8 sm:py-12 px-4 border-b-2 border-gold-500">
-        {/* Ornate Gold Background Ring */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[550px] sm:w-[700px] h-[550px] sm:h-[700px] bg-radial from-gold-500/10 via-transparent to-transparent pointer-events-none rounded-full blur-2xl"></div>
+      {/* 2. DAILY DIGITAL NEWSLETTER BANNER */}
+      {config?.tabs?.newsletter?.enabled !== false && (
+        <DailyNewsletter />
+      )}
 
-        <div className="max-w-7xl mx-auto flex flex-col items-center text-center relative z-10">
-          
-          {/* Official Emblem */}
-          <div className="relative mb-4 group cursor-pointer" onClick={() => window.scrollTo({ top: 300, behavior: 'smooth' })}>
-            <div className="absolute -inset-1 bg-gradient-to-r from-gold-400 via-amber-300 to-gold-500 rounded-full blur-md opacity-80 group-hover:opacity-100 transition duration-500"></div>
-            <img
-              src="/logo.jpg"
-              alt="म्हाडा टॉवर्स उत्सव मंडळ लोगो"
-              className="relative w-28 h-28 sm:w-36 sm:h-36 md:w-44 md:h-44 rounded-full object-cover border-4 border-gold-400 shadow-2xl"
-            />
-          </div>
 
-          {/* Registration Tag */}
-          <div className="inline-flex items-center gap-1.5 text-[11px] sm:text-xs font-semibold text-gold-300 bg-maroon-850/90 px-3.5 py-1 rounded-full border border-gold-500/40 mb-3 shadow-inner">
-            <Sparkles className="w-3.5 h-3.5 text-gold-400" />
-            <span>{config?.regNo ? `नोंदणी क्र: ${config.regNo}` : "नोंदणी क्र: १२४३/२०२५ - पुणे"}</span>
-          </div>
 
-          {/* Heading */}
-          <h1 className="text-2xl sm:text-4xl md:text-5xl font-black text-gold-200 tracking-tight font-heading leading-tight drop-shadow-md max-w-4xl">
-            {config?.mandalNameMr || "म्हाडा टॉवर्स उत्सव मंडळ"}
-          </h1>
-          
-          <p className="text-sm sm:text-lg text-gold-100/90 font-medium mt-1">
-            {config?.addressMr || "पिंपरी वाघेरे, पिंपरी चिंचवड, पुणे - ४११०१७"}
-          </p>
-
-          <p className="text-xs sm:text-sm text-festive-saffron font-bold tracking-widest uppercase mt-2 bg-maroon-950/80 px-4 py-1 rounded-full border border-amber-500/30">
-            श्री गणेशोत्सव {config?.festivalYear || "२०२५ - २०२६"} • डिजिटल माहिती केंद्र
-          </p>
-
-          {/* 5 Participating Buildings Highlight */}
-          <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
-            <span className="text-xs text-gold-300 font-semibold mr-1">सहभागी ५ इमारती:</span>
-            {["G WING", "H WING", "I WING", "J WING", "K WING"].map((w) => (
-              <span
-                key={w}
-                className="bg-maroon-800/90 text-gold-200 text-xs font-bold px-3 py-1 rounded-lg border border-gold-500/40 shadow-xs"
-              >
-                {w}
-              </span>
-            ))}
-          </div>
-
-          {/* Quick Action Buttons */}
-          <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
-            <button
-              onClick={() => {
-                const el = document.getElementById("aarti-section");
-                if (el) el.scrollIntoView({ behavior: "smooth" });
-              }}
-              className="flex items-center gap-2 bg-gradient-to-r from-gold-500 to-gold-600 hover:from-gold-400 hover:to-gold-500 text-maroon-950 font-bold text-xs sm:text-sm px-5 py-2.5 rounded-xl shadow-lg border border-gold-300 transition transform hover:-translate-y-0.5"
-            >
-              <Clock className="w-4 h-4 text-maroon-950" />
-              <span>दैनिक महाआरती वेळा</span>
-            </button>
-
-            <button
-              onClick={onOpenWhatsAppQR}
-              className="flex items-center gap-2 bg-emerald-800 hover:bg-emerald-700 text-emerald-100 font-semibold text-xs sm:text-sm px-5 py-2.5 rounded-xl shadow-lg border border-emerald-500/40 transition transform hover:-translate-y-0.5"
-            >
-              <QrCode className="w-4 h-4 text-emerald-300" />
-              <span>व्हॉट्सॲप कम्युनिटी QR</span>
-            </button>
-          </div>
-
+      {/* 4. Event Scroller */}
+      {config?.tabs?.cultural?.enabled !== false && (
+        <div id="events-section" className="scroll-mt-16">
+          <EventScroller
+            events={events}
+            activeCategory={activeCategory}
+            onSelectCategory={(cat) => setActiveCategory(cat)}
+            onShareWhatsApp={handleShareWhatsApp}
+          />
         </div>
-      </section>
+      )}
 
-      {/* 3. Participating Wing Selector */}
-      <WingFilter
-        selectedWing={selectedWing}
-        onSelectWing={(wing) => setSelectedWing(wing)}
-      />
-
-      {/* 4. PRIME REQUIREMENT: EVENT SCROLLER (Arrival, Aarti, Cultural, Prasad, Visarjan) */}
-      <EventScroller
-        events={events}
-        activeCategory={activeCategory}
-        onSelectCategory={(cat) => setActiveCategory(cat)}
-        onShareWhatsApp={handleShareWhatsApp}
-      />
-
-      {/* 5. Main Content Container for Approved Tabs */}
-      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-8 space-y-8">
+      {/* 5. Main Content Sections */}
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 space-y-8">
         
-        {/* AARTI TIMINGS TAB */}
+        {/* DAILY MAHA AARTI & LIVE COUNTDOWN */}
         {config?.tabs?.aarti?.enabled !== false && (
-          <div id="aarti-section">
-            <AartiCard onShareWhatsApp={handleShareWhatsApp} />
-          </div>
+          <AartiCard onShareWhatsApp={handleShareWhatsApp} />
         )}
 
-        {/* MAHA PRASAD TAB */}
-        {config?.tabs?.prasad?.enabled !== false && (
-          <div id="prasad-section">
-            <MahaprasadCard onShareWhatsApp={handleShareWhatsApp} />
-          </div>
+        {/* 10-DAY FESTIVAL SCHEDULE */}
+        {config?.tabs?.schedule?.enabled !== false && (
+          <TenDaysSchedule onShareWhatsApp={handleShareWhatsApp} />
         )}
 
-        {/* VISARJAN TAB */}
-        {config?.tabs?.visarjan?.enabled !== false && (
-          <div id="visarjan-section">
-            <VisarjanCard onShareWhatsApp={handleShareWhatsApp} />
-          </div>
+        {/* UPCOMING & YEARLY EVENTS */}
+        {(config?.tabs?.cultural?.enabled !== false || config?.tabs?.upcoming?.enabled !== false) && (
+          <UpcomingEvents 
+            onShareWhatsApp={handleShareWhatsApp} 
+            onOpenUpcomingCalendar={onOpenUpcomingCalendar} 
+          />
         )}
 
-        {/* OWNERS CORNER TAB (Approved by Admin) */}
-        {config?.tabs?.ownersNotice?.enabled !== false && (
-          <div id="owners-section">
-            <OwnersNotice />
-          </div>
+        {/* PAST EVENT PHOTOS GALLERY */}
+        {config?.tabs?.gallery?.enabled !== false && (
+          <PhotoGallery onShareWhatsApp={handleShareWhatsApp} />
         )}
 
-        {/* SOCIETY RULES TAB */}
+        {/* SOCIETY RULES */}
         {config?.tabs?.rules?.enabled !== false && (
           <div id="rules-section">
             <MandalRules />
           </div>
         )}
 
-        {/* EMERGENCY & COMMITTEE HELPLINES TAB */}
+        {/* EMERGENCY CONTACTS & SOCIETY EMAIL */}
         {config?.tabs?.contacts?.enabled !== false && (
-          <div id="contacts-section">
-            <EmergencyContacts contacts={contacts} />
-          </div>
+          <EmergencyContacts contacts={contacts} />
+        )}
+
+        {/* ABOUT MANDAL & COMMUNITY SECURITY AT THE END */}
+        {config?.tabs?.mandalInfo?.enabled !== false && (
+          <AboutMandal onShareWhatsApp={handleShareWhatsApp} />
         )}
 
       </div>
 
       {/* Announcement Detail Modal if clicked */}
       {selectedAnnouncement && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
-          <div className="bg-white rounded-2xl max-w-md w-full border-2 border-gold-400 p-6 shadow-2xl relative">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-xs p-4">
+          <div className="bg-white rounded-3xl max-w-md w-full border-2 border-gold-400 p-6 shadow-2xl relative animate-fadeIn">
             <div className="flex items-center justify-between mb-3 border-b pb-2">
-              <span className="text-xs font-bold text-maroon-800 bg-gold-100 px-2 py-0.5 rounded">
+              <span className="text-xs font-black text-maroon-800 bg-gold-100 px-2.5 py-0.5 rounded-full">
                 {selectedAnnouncement.category}
               </span>
               <button
@@ -246,10 +181,10 @@ const Home = ({ onOpenWhatsAppQR }) => {
                 ✕
               </button>
             </div>
-            <h3 className="text-base sm:text-lg font-bold text-maroon-950 font-heading mb-2">
+            <h3 className="text-base sm:text-lg font-black text-maroon-950 font-heading mb-2">
               {selectedAnnouncement.titleMr}
             </h3>
-            <p className="text-xs sm:text-sm text-gray-700 leading-relaxed mb-4">
+            <p className="text-xs sm:text-sm text-gray-700 leading-relaxed mb-5">
               {selectedAnnouncement.descriptionMr}
             </p>
             <button
@@ -261,7 +196,7 @@ const Home = ({ onOpenWhatsAppQR }) => {
                   descriptionMr: selectedAnnouncement.descriptionMr
                 });
               }}
-              className="w-full py-2 bg-emerald-700 text-white rounded-xl text-xs font-bold"
+              className="w-full py-2.5 bg-emerald-700 hover:bg-emerald-600 text-white rounded-xl text-xs font-bold shadow transition"
             >
               व्हॉट्सॲपवर पाठवा
             </button>

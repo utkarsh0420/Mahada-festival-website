@@ -1,4 +1,4 @@
-﻿import mongoose from "mongoose";
+import mongoose from "mongoose";
 
 const contactSchema = new mongoose.Schema({
   nameMr: { type: String, required: true },
@@ -6,7 +6,7 @@ const contactSchema = new mongoose.Schema({
   roleMr: { type: String, required: true },
   roleEn: { type: String, default: "" },
   wing: { type: String, default: "सर्व विंग्ज" },
-  phone: { type: String, required: true },
+  phone: { type: String, default: "" },
   type: {
     type: String,
     enum: ["committee", "emergency", "wing_lead", "security"],

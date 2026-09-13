@@ -1,4 +1,4 @@
-﻿{
+{
   "name": "mhada-utsav-server",
   "version": "1.0.0",
   "description": "Backend API for MHADA Towers Utsav Mandal Ganpati Digital Information Hub",
@@ -6,7 +6,8 @@
   "type": "module",
   "scripts": {
     "start": "node server.js",
-    "dev": "node --watch server.js"
+    "dev": "node --watch server.js",
+    "seed": "node -e \"import('./seed/seedData.js').then(m => m.seedInitialData())\""
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

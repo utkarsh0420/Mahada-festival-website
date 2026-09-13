@@ -1,4 +1,4 @@
-﻿# म्हाडा टॉवर्स उत्सव मंडळ (MHADA Towers Utsav Mandal)
+# म्हाडा टॉवर्स उत्सव मंडळ (MHADA Towers Utsav Mandal)
 ### श्री गणेशोत्सव डिजिटल माहिती केंद्र व कार्यक्रम पत्रिका (Ganpati Digital Information Hub)
 **पिंपरी वाघेरे, पिंपरी चिंचवड, पुणे - ४११०१७ | नोंदणी क्र: १२४३/२०२५ - पुणे**
 
@@ -43,7 +43,7 @@
 
 ## 🔐 व्यवस्थापक लॉगिन माहिती (Admin Credentials)
 
-- **सोसायटी अधिकृत ईमेल**: `mhadatowersutsav@gmail.com`
+- **सोसायटी अधिकृत ईमेल**: `mhadatowersutsavmandal@gmail.com`
 - **पासवर्ड**: `MhadaGanpati@2025`
 - **Google लॉगिन**: "Sign in with Google (Society Email)" बटणावर क्लिक करून थेट अधिकृत प्रवेश.
 

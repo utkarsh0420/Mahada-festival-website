@@ -1,4 +1,4 @@
-﻿import express from "express";
+import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import connectDB from "./config/db.js";
@@ -22,7 +22,8 @@ app.use(cors({
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"]
 }));
-app.use(express.json());
+app.use(express.json({ limit: "25mb" }));
+app.use(express.urlencoded({ extended: true, limit: "25mb" }));
 
 // API Routes
 app.use("/api/auth", authRoutes);
@@ -47,8 +48,17 @@ const startServer = async () => {
     await seedInitialData();
   }
 
-  app.listen(PORT, () => {
+  const server = app.listen(PORT, () => {
     console.log(`[MHADA Utsav Server] Running on http://localhost:${PORT}`);
+  });
+
+  server.on("error", (err) => {
+    if (err.code === "EADDRINUSE") {
+      console.warn(`[MHADA Utsav Server] Notice: Port ${PORT} is already in use by another instance.`);
+      console.warn(`[MHADA Utsav Server] To free port ${PORT}, run: Stop-Process -Id (Get-NetTCPConnection -LocalPort ${PORT}).OwningProcess -Force`);
+    } else {
+      console.error("[MHADA Utsav Server Error]:", err.message);
+    }
   });
 };
 
