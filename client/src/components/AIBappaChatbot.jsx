@@ -1,39 +1,14 @@
 import React, { useState, useRef, useEffect } from "react";
 import { 
   MessageSquare, Sparkles, Send, X, Bot, 
-  Flame, Calendar, Mail, Phone, Building, Heart, ChevronDown 
+  Flame, Calendar, Mail, Phone, Building, Heart 
 } from "lucide-react";
 import { useLanguage } from "../context/LanguageContext";
-
-const BAPPA_KNOWLEDGE = {
-  aarti: {
-    mr: "🪔 *दैनिक महाआरती वेळा:*\n• सकाळची महाआरती: **सकाळी ०८:३० वाजता**\n• संध्याकाळची महाआरती: **रात्री ०८:०० वाजता**\n\nआजची आरती मुख्य उत्सव मंडपात संपन्न होईल. सर्व ४ इमारतींच्या (G, H, J, K) भाविकांनी वेळेवर उपस्थित राहावे!",
-    en: "🪔 *Daily Maha Aarti Timings:*\n• Morning Aarti: **08:30 AM**\n• Evening Aarti: **08:00 PM**\n\nDaily Aarti takes place at the Central Festive Pandal. Residents from all 4 buildings (G, H, J, K) are cordially invited!"
-  },
-  wings: {
-    mr: "🏢 *सहभागी ४ इमारतींची नावे:*\n• **G विंग:** नंदादेवी (Nandadevi)\n• **H विंग:** निलगिरी (Nilgiri)\n• **J विंग:** पूर्वांचल (Purvanchal)\n• **K विंग:** गोवर्धन (Govardhan)\n\n'४ विंग्स, एकच परिवार' या भावनेने सर्व इमारती उत्सव साजरा करतात!",
-    en: "🏢 *Participating 4 Buildings:*\n• **G Wing:** Nandadevi\n• **H Wing:** Nilgiri\n• **J Wing:** Purvanchal\n• **K Wing:** Govardhan\n\nCelebrated with unity under the motto: '4 Wings, One Family'!"
-  },
-  email: {
-    mr: "📧 *सोसायटी अधिकृत ईमेल:*\n**mhadatowersutsav@gmail.com**\n\nनोंदणी क्र: १२४३/२०२५ - पुणे. आपण कोणत्याही सूचना किंवा चौकशीसाठी या ईमेलवर थेट संपर्क करू शकता.",
-    en: "📧 *Official Society Email:*\n**mhadatowersutsav@gmail.com**\n\nRegd No: 1243/2025 - Pune. Feel free to write to us for any queries or feedback."
-  },
-  schedule: {
-    mr: "📅 *१० दिवसांचे वेळापत्रक (७ ते १६ सप्टेंबर):*\n• दिवस १ (७ सप्टें): श्री गणेश आगमन व प्राणप्रतिष्ठा (G विंग)\n• दिवस २ (८ सप्टें): ऋषी पंचमी व चित्रकला स्पर्धा (H विंग)\n• दिवस ३ (९ सप्टें): गौरी आवाहन (J विंग)\n• दिवस ४ (१० सप्टें): गौरी पूजन व हळदी-कुंकू (K विंग)\n• दिवस ५ (११ सप्टें): विशेष आरती (G विंग)\n• दिवस ६ (१२ सप्टें): एकता भजन संध्या (H विंग)\n• दिवस ७ (१३ सप्टें): सत्यविनायक पूजा (J विंग)\n• दिवस ८ (१४ सप्टें): महिला मंडळ आरती (K विंग)\n• दिवस ९ (१५ सप्टें): दीपोत्सव व सत्कार (G & H विंग)\n• दिवस १० (१६ सप्टें): सांगता महाआरती (सर्व ४ विंग्ज संयुक्त)",
-    en: "📅 *10-Day Festival Schedule (7 to 16 September):*\n• Day 1 (7 Sep): Bappa Arrival & Sthapana (G Wing)\n• Day 2 (8 Sep): Rishi Panchami & Drawing Contest (H Wing)\n• Day 3 (9 Sep): Gauri Aavahan (J Wing)\n• Day 4 (10 Sep): Gauri Pujan & Haldi-Kunku (K Wing)\n• Day 5 (11 Sep): Special Aarti Day (G Wing)\n• Day 6 (12 Sep): Bhajan Sandhya (H Wing)\n• Day 7 (13 Sep): Satyavinayak Pooja (J Wing)\n• Day 8 (14 Sep): Mahila Mandal Aarti (K Wing)\n• Day 9 (15 Sep): Deepotsav & Felicitations (G & H)\n• Day 10 (16 Sep): Concluding Maha Aarti (All 4 Wings)"
-  },
-  contacts: {
-    mr: "📞 *महत्वाचे संपर्क:*\n• अध्यक्ष: श्री. सतीश कांबळे (+91 98220 11223) - G विंग\n• उपाध्यक्ष: श्री. विजय पवार (+91 94220 77882) - H विंग\n• सचिव: श्री. राहुल गायकवाड (+91 98220 44556) - H विंग\n• सहसचिव: श्री. निलेश मोरे (+91 94220 77884) - J विंग\n• मुख्य संघटक: श्री. गणेश जाधव (+91 94220 77885) - K विंग\n• २४x७ सुरक्षा मदत: +91 98220 99999",
-    en: "📞 *Important Contacts:*\n• President: Mr. Satish Kamble (+91 98220 11223) - G Wing\n• Vice President: Mr. Vijay Pawar (+91 94220 77882) - H Wing\n• Secretary: Mr. Rahul Gaikwad (+91 98220 44556) - H Wing\n• Joint Secretary: Mr. Nilesh More (+91 94220 77884) - J Wing\n• Chief Organizer: Mr. Ganesh Jadhav (+91 94220 77885) - K Wing\n• 24x7 Security Helpdesk: +91 98220 99999"
-  },
-  blessing: {
-    mr: "॥ वक्रतुण्ड महाकाय सूर्यकोटि समप्रभ ।\nनिर्विघ्नं कुरु मे देव सर्वकार्येषु सर्वदा ॥ 🌸\n\nगणपती बाप्पा आपल्या आणि आपल्या कुटुंबावर सुख, समृद्धी, उत्तम आरोग्य व अखंड आनंदाचा वर्षाव करोत! गणपती बाप्पा मोरया, मंगलमूर्ती मोरया!",
-    en: "॥ Vakratunda Mahakaya Suryakoti Samaprabha ।\nNirvighnam Kuru Me Deva Sarvakaryeshu Sarvada ॥ 🌸\n\nMay Lord Ganesha bless you and your family with boundless joy, prosperity, peace and good health! Ganpati Bappa Morya!"
-  }
-};
+import { useConfig } from "../context/ConfigContext";
 
 const AIBappaChatbot = () => {
   const { language, t } = useLanguage();
+  const { config } = useConfig();
   const [isOpen, setIsOpen] = useState(false);
   const [inputMessage, setInputMessage] = useState("");
   const [messages, setMessages] = useState([
@@ -58,119 +33,164 @@ const AIBappaChatbot = () => {
     }
   }, [messages, isOpen]);
 
-  // AI response resolver
+  // Lock body scroll on mobile while chat is open
+  useEffect(() => {
+    if (isOpen && typeof window !== "undefined" && window.innerWidth < 640) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, [isOpen]);
+
+  // Dynamically resolve AI responses based on live config
   const getBappaResponse = (query) => {
     const q = query.toLowerCase();
 
+    // 1. Aarti timings
     if (q.includes("आरती") || q.includes("aarti") || q.includes("time") || q.includes("वेळ") || q.includes("morning") || q.includes("evening")) {
-      return BAPPA_KNOWLEDGE.aarti[language];
+      const todayAarti = config?.dailyAartiSchedule?.[0];
+      const morning = todayAarti?.morningTime || "सकाळी ०८:३० वाजता";
+      const evening = todayAarti?.eveningTime || "रात्री ०८:०० वाजता";
+      const host = todayAarti?.hostWing ? `\nयजमान विंग: **${todayAarti.hostWing}**` : "";
+      
+      return language === "mr"
+        ? `🪔 *दैनिक महाआरती वेळा:*\n• सकाळची महाआरती: **${morning}**\n• संध्याकाळची महाआरती: **${evening}**${host}\n\nआजची आरती मुख्य उत्सव मंडपात संपन्न होईल. सर्व भाविकांनी वेळेवर उपस्थित राहावे!`
+        : `🪔 *Daily Maha Aarti Timings:*\n• Morning Aarti: **${todayAarti?.morningTimeEn || morning}**\n• Evening Aarti: **${todayAarti?.eveningTimeEn || evening}**\n\nDaily Aarti takes place at the Central Festive Pandal. All society residents are cordially invited!`;
     }
-    if (q.includes("विंग") || q.includes("wing") || q.includes("इमारत") || q.includes("building") || q.includes("यजमान") || q.includes("host") || q.includes("nandadevi") || q.includes("govardhan")) {
-      return BAPPA_KNOWLEDGE.wings[language];
+
+    // 2. Wings
+    if (q.includes("विंग") || q.includes("wing") || q.includes("इमारत") || q.includes("building") || q.includes("यजमान") || q.includes("host")) {
+      const wings = config?.wings || [];
+      if (wings.length > 0) {
+        const wingListMr = wings.map(w => `• **${w.code} विंग:** ${w.nameMr || w.sacredNameMr || w.code} (प्रमुख: ${w.coordinatorLead || "समिती"})`).join("\n");
+        const wingListEn = wings.map(w => `• **${w.code} Wing:** ${w.nameEn || w.sacredNameEn || w.code} (Lead: ${w.coordinatorLead || "Committee"})`).join("\n");
+        return language === "mr"
+          ? `🏢 *सहभागी इमारतींची माहिती:*\n${wingListMr}\n\n'४ विंग्स, एकच परिवार' या भावनेने सर्व इमारती उत्सव साजरा करतात!`
+          : `🏢 *Participating Buildings:*\n${wingListEn}\n\nCelebrated with unity under the motto: '4 Wings, One Family'!`;
+      }
+      return language === "mr"
+        ? `🏢 म्हाडा टॉवर्स मधील सर्व ४ विंग्ज (G, H, J, K) संयुक्तपणे गणेशोत्सव साजरा करतात.`
+        : `🏢 All buildings of MHADA Towers jointly celebrate the festival.`;
     }
+
+    // 3. Email & Society office
     if (q.includes("ईमेल") || q.includes("email") || q.includes("mail") || q.includes("पत्र") || q.includes("सोसायटी")) {
-      return BAPPA_KNOWLEDGE.email[language];
+      const email = config?.mandalInfo?.email || config?.email || "mhadatowersutsavmandal@gmail.com";
+      const reg = config?.regNo ? `\nनोंदणी क्र: ${config.regNo}` : "";
+      return language === "mr"
+        ? `📧 *सोसायटी अधिकृत ईमेल:*\n**${email}**${reg}\n\nआपण कोणत्याही सूचना किंवा चौकशीसाठी या ईमेलवर थेट संपर्क करू शकता.`
+        : `📧 *Official Society Email:*\n**${email}**\n\nFeel free to write to us for any queries or feedback.`;
     }
-    if (q.includes("वेळापत्रक") || q.includes("schedule") || q.includes("तारीख") || q.includes("date") || q.includes("१० दिवस") || q.includes("10 day") || q.includes("चतुर्थी") || q.includes("अनंत")) {
-      return BAPPA_KNOWLEDGE.schedule[language];
+
+    // 4. Schedule
+    if (q.includes("वेळापत्रक") || q.includes("schedule") || q.includes("तारीख") || q.includes("date") || q.includes("१० दिवस") || q.includes("10 day")) {
+      const schedule = config?.dailyAartiSchedule || [];
+      if (schedule.length > 0) {
+        const itemsMr = schedule.slice(0, 5).map(s => `• दिवस ${s.dayNumber || s.day}: ${s.dateStr || s.date} - ${s.hostWing || ""}`).join("\n");
+        return language === "mr"
+          ? `📅 *उत्सव वेळापत्रक (पहिले ५ दिवस):*\n${itemsMr}\n\nसंपूर्ण १० दिवसांचे वेळापत्रक पाहण्यासाठी 'वेळापत्रक' सेक्शन तपासा!`
+          : `📅 *Festival Schedule Preview:*\n${itemsMr}\n\nPlease check the Schedule section for the complete 10-day timetable!`;
+      }
     }
+
+    // 5. Contacts / Helplines
     if (q.includes("फोन") || q.includes("phone") || q.includes("संपर्क") || q.includes("contact") || q.includes("अध्यक्ष") || q.includes("सचिव") || q.includes("मदत") || q.includes("help") || q.includes("security")) {
-      return BAPPA_KNOWLEDGE.contacts[language];
+      const helpline = config?.emergencyHelpline || config?.mandalInfo?.helpline || "+91 98220 11223";
+      const committee = config?.mandalInfo?.committeeMembers || [];
+      const memLines = committee.slice(0, 3).map(m => `• ${m.roleMr}: ${m.nameMr} (${m.phone || helpline})`).join("\n");
+      return language === "mr"
+        ? `📞 *महत्वाचे संपर्क:*\n${memLines || `• २४x७ आपत्कालीन मदत कक्ष: ${helpline}`}\n• मुख्य सुरक्षा कक्ष: ${helpline}`
+        : `📞 *Important Contacts:*\n${memLines || `• 24x7 Helpline: ${helpline}`}\n• Society Desk: ${helpline}`;
     }
-    if (q.includes("आशीर्वाद") || q.includes("blessing") || q.includes("श्लोक") || q.includes("shloka") || q.includes("मंत्र") || q.includes("मंत्रपुष्पांजली") || q.includes("moraya") || q.includes("मोरया")) {
-      return BAPPA_KNOWLEDGE.blessing[language];
+
+    // 6. Blessings
+    if (q.includes("आशीर्वाद") || q.includes("blessing") || q.includes("श्लोक") || q.includes("shloka") || q.includes("मंत्र") || q.includes("moraya") || q.includes("मोरया")) {
+      return language === "mr"
+        ? "॥ वक्रतुण्ड महाकाय सूर्यकोटि समप्रभ ।\nनिर्विघ्नं कुरु मे देव सर्वकार्येषु सर्वदा ॥ 🌸\n\nगणपती बाप्पा आपल्या आणि आपल्या कुटुंबावर सुख, समृद्धी, उत्तम आरोग्य व अखंड आनंदाचा वर्षाव करोत! गणपती बाप्पा मोरया, मंगलमूर्ती मोरया!"
+        : "॥ Vakratunda Mahakaya Suryakoti Samaprabha ।\nNirvighnam Kuru Me Deva Sarvakaryeshu Sarvada ॥ 🌸\n\nMay Lord Ganesha bless you and your family with boundless joy, prosperity, peace and good health! Ganpati Bappa Morya!";
     }
 
     return language === "mr"
-      ? "गणपती बाप्पा मोरया! 🙏 मी म्हाडा टॉवर्स गणेशोत्सव संबंधी माहिती देण्यास सदैव तयार आहे. आपण आरती वेळा, विंग यजमान, १० दिवसांचे वेळापत्रक, किंवा सोसायटी ईमेल विचारू शकता."
-      : "Ganpati Bappa Morya! 🙏 I am here to help you with MHADA Towers Ganesh Festival updates. You can ask about Aarti timings, host wings, 10-day schedule, or society email.";
+      ? `गणपती बाप्पा मोरया! 🙏 मी ${config?.mandalNameMr || "म्हाडा टॉवर्स उत्सव मंडळ"} माहिती केंद्र सहाय्यक आहे. आपण आरती वेळा, विंग यजमान, १० दिवसांचे वेळापत्रक, किंवा सोसायटी ईमेल विचारू शकता.`
+      : `Ganpati Bappa Morya! 🙏 I am here to help you with festival updates. You can ask about Aarti timings, host wings, 10-day schedule, or society email.`;
   };
 
-  const handleSendMessage = (textToSend) => {
-    const text = textToSend || inputMessage.trim();
-    if (!text) return;
+  const handleSendMessage = (textToSend = null) => {
+    const query = (textToSend || inputMessage).trim();
+    if (!query) return;
 
     const userMsg = {
       sender: "user",
-      text,
+      text: query,
       time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
     };
 
     setMessages((prev) => [...prev, userMsg]);
-    if (!textToSend) setInputMessage("");
+    setInputMessage("");
     setIsTyping(true);
 
     setTimeout(() => {
-      const bappaReply = {
+      const reply = getBappaResponse(query);
+      const bappaMsg = {
         sender: "bappa",
-        text: getBappaResponse(text),
+        text: reply,
         time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
       };
-      setMessages((prev) => [...prev, bappaReply]);
+      setMessages((prev) => [...prev, bappaMsg]);
       setIsTyping(false);
     }, 600);
   };
 
-  const quickChips = [
-    { label: language === "mr" ? "🪔 आजची आरती वेळ?" : "🪔 Today's Aarti?", query: "आरती वेळ सांगा" },
-    { label: language === "mr" ? "🏢 इमारतींची नावे?" : "🏢 Building Names?", query: "इमारतींची नावे आणि विंग यजमान" },
-    { label: language === "mr" ? "📅 १० दिवसांचे वेळापत्रक" : "📅 10-Day Schedule", query: "१० दिवसांचे वेळापत्रक दाखवा" },
-    { label: language === "mr" ? "📧 सोसायटी ईमेल?" : "📧 Society Email?", query: "सोसायटी अधिकृत ईमेल" },
-    { label: language === "mr" ? "📞 आपत्कालीन संपर्क" : "📞 Contacts & Help", query: "समिती व मदत संपर्क" },
-    { label: language === "mr" ? "🌸 बाप्पांचे आशीर्वाद" : "🌸 Bappa's Blessings", query: "बाप्पांचे आशीर्वाद व श्लोक" },
-  ];
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSendMessage();
+    }
+  };
 
   return (
     <>
-      {/* Floating Widget Trigger Button */}
-      <div className="fixed bottom-5 right-4 sm:right-6 z-50">
-        {!isOpen && (
-          <button
-            onClick={() => setIsOpen(true)}
-            className="relative flex items-center gap-2.5 px-4 py-3 bg-gradient-to-r from-maroon-900 via-maroon-850 to-maroon-900 hover:from-maroon-800 hover:to-maroon-800 text-gold-200 rounded-full shadow-2xl border-2 border-gold-400 group transition-all duration-300 transform hover:scale-105 active:scale-95"
-            title="AI बाप्पा सहाय्यक उघडा"
-          >
-            {/* Pulsing Aura */}
-            <span className="absolute -inset-1 rounded-full bg-gold-400/40 blur-sm group-hover:bg-gold-400/60 animate-pulse"></span>
+      {/* Floating Trigger Diya Button */}
+      <div className="fixed bottom-5 right-5 z-40">
+        <button
+          onClick={() => setIsOpen(!isOpen)}
+          className="relative group p-3.5 sm:p-4 rounded-full bg-gradient-to-r from-amber-600 via-orange-600 to-red-700 text-white shadow-2xl hover:shadow-orange-500/50 border-2 border-gold-300 transition-all duration-300 transform hover:scale-110 active:scale-95 flex items-center justify-center"
+          title="AI बाप्पा सहाय्यकाशी बोला"
+        >
+          <div className="absolute -top-1 -right-1 flex h-4 w-4">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-gold-400 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-4 w-4 bg-gold-300 text-[9px] font-black text-maroon-950 items-center justify-center">
+              ॐ
+            </span>
+          </div>
 
-            <div className="relative w-8 h-8 rounded-full bg-gold-400 text-maroon-950 flex items-center justify-center font-black shadow">
-              <span className="text-base">ॐ</span>
-            </div>
-
-            <div className="relative text-left hidden sm:block">
-              <div className="text-xs font-black text-gold-300 leading-tight">
-                {t("bappaAssistant")}
-              </div>
-              <div className="text-[10px] text-gold-100/80 font-medium">
-                {language === "mr" ? "काहीही विचारा • AI Bot" : "Ask anything • AI Bot"}
-              </div>
-            </div>
-
-            <Sparkles className="w-4 h-4 text-gold-300 animate-spin" />
-          </button>
-        )}
+          <Bot className="w-6 h-6 text-gold-200 group-hover:rotate-12 transition-transform" />
+          <span className="hidden md:inline-block ml-2 text-xs font-bold text-gold-100 pr-1">
+            {language === "mr" ? "AI बाप्पा सहाय्यक" : "AI Bappa Help"}
+          </span>
+        </button>
       </div>
 
-      {/* Floating Chat Modal */}
+      {/* Chat Window Modal */}
       {isOpen && (
-        <div className="fixed bottom-4 right-3 sm:right-6 z-50 w-[94vw] sm:w-[400px] h-[540px] max-h-[85vh] bg-white rounded-3xl border-2 border-gold-400 shadow-2xl flex flex-col overflow-hidden animate-fadeIn">
+        <div className="fixed inset-x-2 bottom-2 sm:inset-auto sm:bottom-20 sm:right-6 z-50 w-auto sm:w-96 max-w-lg bg-white rounded-3xl border-2 border-gold-400 shadow-2xl overflow-hidden flex flex-col h-[520px] max-h-[85vh] animate-fadeIn">
           
-          {/* Chat Header */}
-          <div className="bg-gradient-to-r from-maroon-950 via-maroon-900 to-maroon-950 text-white p-3.5 sm:p-4 border-b-2 border-gold-400 flex items-center justify-between shadow-md flex-shrink-0">
+          {/* Header */}
+          <div className="bg-gradient-to-r from-maroon-950 via-maroon-900 to-maroon-950 text-white p-3.5 sm:p-4 border-b-2 border-gold-400 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-gold-500 via-amber-300 to-gold-400 text-maroon-950 flex items-center justify-center font-black text-lg border border-gold-200 shadow-inner">
-                ॐ
+              <div className="w-10 h-10 rounded-full bg-maroon-800 border border-gold-400 flex items-center justify-center text-gold-300 shadow-inner">
+                <Flame className="w-5 h-5 text-orange-400 animate-diya" />
               </div>
               <div>
-                <h3 className="text-sm sm:text-base font-black text-gold-300 font-heading leading-tight flex items-center gap-1.5">
-                  <span>{t("bappaAssistant")}</span>
-                  <span className="text-[9px] bg-gold-400 text-maroon-950 font-bold px-1.5 py-0.2 rounded-full uppercase">
-                    AI 2.0
-                  </span>
+                <h3 className="text-sm font-bold text-gold-100 font-heading">
+                  {language === "mr" ? "AI बाप्पा सहाय्यक" : "AI Bappa Assistant"}
                 </h3>
-                <p className="text-[11px] text-gold-100/80 font-medium flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
-                  <span>{t("bappaOnline")}</span>
+                <p className="text-[11px] text-gold-300/80 flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                  <span>{language === "mr" ? "सक्रिय • २४x७ माहिती केंद्र" : "Online • 24x7 Helpdesk"}</span>
                 </p>
               </div>
             </div>
@@ -178,92 +198,78 @@ const AIBappaChatbot = () => {
             <button
               onClick={() => setIsOpen(false)}
               className="p-1.5 rounded-full text-gold-300 hover:text-white hover:bg-maroon-800 transition"
-              title="चॅट बंद करा"
             >
               <X className="w-5 h-5" />
             </button>
           </div>
 
-          {/* Quick Suggestion Chips */}
-          <div className="bg-[#FAF5EB] px-3 py-2 border-b border-gold-300/60 overflow-x-auto no-scrollbar flex items-center gap-1.5 flex-shrink-0">
-            {quickChips.map((chip, i) => (
+          {/* Quick Questions Scroller */}
+          <div className="bg-gold-50/80 p-2 border-b border-gold-200 flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+            {[
+              { label: "🪔 आरती वेळा", text: "महाआरती वेळा काय आहेत?" },
+              { label: "🏢 विंग यजमान", text: "इमारतींची नावे व यजमान विंग सांगा" },
+              { label: "📅 वेळापत्रक", text: "१० दिवसांचे वेळापत्रक सांगा" },
+              { label: "📧 ईमेल पत्ता", text: "सोसायटीचा अधिकृत ईमेल सांगा" },
+              { label: "🌸 आशीर्वाद", text: "बाप्पांचे आशीर्वाद" }
+            ].map((q, i) => (
               <button
                 key={i}
-                onClick={() => handleSendMessage(chip.query)}
-                className="flex-shrink-0 text-[11px] font-bold text-maroon-900 bg-white hover:bg-gold-100 px-2.5 py-1 rounded-full border border-gold-300 shadow-2xs transition active:scale-95"
+                onClick={() => handleSendMessage(q.text)}
+                className="flex-shrink-0 text-[11px] font-bold px-2.5 py-1 rounded-full bg-white border border-gold-300 text-maroon-950 hover:bg-gold-200 transition shadow-2xs whitespace-nowrap"
               >
-                {chip.label}
+                {q.label}
               </button>
             ))}
           </div>
 
-          {/* Messages Body */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-[#FFFDF9]">
-            {messages.map((m, idx) => {
-              const isBappa = m.sender === "bappa";
-              return (
+          {/* Messages Container */}
+          <div className="flex-1 p-3.5 overflow-y-auto space-y-3 bg-[#FFFDF9]">
+            {messages.map((m, idx) => (
+              <div
+                key={idx}
+                className={`flex flex-col ${m.sender === "user" ? "items-end" : "items-start"}`}
+              >
                 <div
-                  key={idx}
-                  className={`flex items-start gap-2 ${isBappa ? "justify-start" : "justify-end"}`}
+                  className={`max-w-[85%] p-3 rounded-2xl text-xs leading-relaxed ${
+                    m.sender === "user"
+                      ? "bg-maroon-850 text-gold-100 rounded-br-none border border-gold-500/40 shadow-sm"
+                      : "bg-white text-gray-800 rounded-bl-none border border-gold-300/80 shadow-xs"
+                  }`}
                 >
-                  {isBappa && (
-                    <div className="w-7 h-7 rounded-full bg-gold-400 text-maroon-950 font-black text-xs flex items-center justify-center flex-shrink-0 border border-gold-500 shadow-xs">
-                      ॐ
-                    </div>
-                  )}
-
-                  <div
-                    className={`max-w-[82%] rounded-2xl p-3 text-xs sm:text-sm leading-relaxed shadow-xs whitespace-pre-line ${
-                      isBappa
-                        ? "bg-white text-maroon-950 border border-gold-300 rounded-tl-xs"
-                        : "bg-maroon-850 text-gold-100 rounded-tr-xs"
-                    }`}
-                  >
-                    {m.text}
-                    <span className="block text-[9px] opacity-60 text-right mt-1">
-                      {m.time}
-                    </span>
-                  </div>
+                  <p className="whitespace-pre-line">{m.text}</p>
                 </div>
-              );
-            })}
+                <span className="text-[9px] text-gray-400 mt-0.5 px-1">{m.time}</span>
+              </div>
+            ))}
 
             {isTyping && (
-              <div className="flex items-center gap-2 text-xs text-maroon-800 font-semibold bg-gold-50 p-2 rounded-xl border border-gold-200 w-fit">
-                <span className="w-2 h-2 rounded-full bg-gold-500 animate-bounce"></span>
-                <span className="w-2 h-2 rounded-full bg-gold-500 animate-bounce [animation-delay:0.2s]"></span>
-                <span className="w-2 h-2 rounded-full bg-gold-500 animate-bounce [animation-delay:0.4s]"></span>
-                <span>बाप्पा विचार करत आहेत...</span>
+              <div className="flex items-center gap-1.5 p-2 text-xs text-maroon-800 bg-gold-100/60 rounded-xl w-fit">
+                <span className="w-2 h-2 rounded-full bg-maroon-700 animate-bounce"></span>
+                <span className="w-2 h-2 rounded-full bg-maroon-700 animate-bounce [animation-delay:0.2s]"></span>
+                <span className="w-2 h-2 rounded-full bg-maroon-700 animate-bounce [animation-delay:0.4s]"></span>
               </div>
             )}
-
             <div ref={messagesEndRef} />
           </div>
 
-          {/* Chat Input Bar */}
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              handleSendMessage();
-            }}
-            className="p-2.5 sm:p-3 bg-white border-t border-gold-300 flex items-center gap-2 flex-shrink-0"
-          >
+          {/* Input Footer */}
+          <div className="p-2.5 bg-white border-t border-gold-300 flex items-center gap-2">
             <input
               type="text"
               value={inputMessage}
               onChange={(e) => setInputMessage(e.target.value)}
-              placeholder={t("askBappa")}
-              className="flex-1 px-3 py-2 text-xs sm:text-sm rounded-xl border border-gray-300 focus:border-gold-500 focus:ring-1 focus:ring-gold-500 outline-none text-maroon-950"
+              onKeyDown={handleKeyDown}
+              placeholder={language === "mr" ? "आरती, विंग्ज किंवा वेळापत्रक विचारा..." : "Ask about aarti, wings or schedule..."}
+              className="flex-1 text-xs p-2.5 rounded-xl border border-gold-300 focus:border-maroon-800 outline-none bg-[#FFFDF9]"
             />
             <button
-              type="submit"
+              onClick={() => handleSendMessage()}
               disabled={!inputMessage.trim()}
-              className="p-2.5 rounded-xl bg-maroon-850 hover:bg-maroon-800 disabled:opacity-50 text-gold-200 transition shadow-md flex items-center justify-center flex-shrink-0"
-              title="प्रश्न विचारा"
+              className="p-2.5 rounded-xl bg-maroon-850 hover:bg-maroon-700 disabled:opacity-50 text-gold-300 shadow transition flex-shrink-0"
             >
               <Send className="w-4 h-4" />
             </button>
-          </form>
+          </div>
 
         </div>
       )}

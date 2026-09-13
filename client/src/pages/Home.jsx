@@ -9,7 +9,6 @@ import API from "../services/api";
 
 import MarqueeTicker from "../components/MarqueeTicker";
 import DailyNewsletter from "../components/DailyNewsletter";
-import WingFilter from "../components/WingFilter";
 import EventScroller from "../components/EventScroller";
 import AartiCard from "../components/AartiCard";
 import TenDaysSchedule from "../components/TenDaysSchedule";
@@ -19,7 +18,7 @@ import MandalRules from "../components/MandalRules";
 import EmergencyContacts from "../components/EmergencyContacts";
 import AboutMandal from "../components/AboutMandal";
 
-const Home = ({ onOpenWhatsAppQR, onOpenSidebar }) => {
+const Home = ({ onOpenWhatsAppQR, onOpenSidebar, onOpenUpcomingCalendar }) => {
   const { config } = useConfig();
   const { language, t } = useLanguage();
 
@@ -103,43 +102,50 @@ const Home = ({ onOpenWhatsAppQR, onOpenSidebar }) => {
         </div>
       )}
 
-      {/* 2. DAILY DIGITAL NEWSLETTER BANNER (Image 1 Requirement) */}
-      <DailyNewsletter onShareWhatsApp={handleShareWhatsApp} />
+      {/* 2. DAILY DIGITAL NEWSLETTER BANNER */}
+      {config?.tabs?.newsletter?.enabled !== false && (
+        <DailyNewsletter />
+      )}
 
-      {/* 3. Participating Wing Selector with Building Names (Image 2 Requirement) */}
-      <div id="wings-section" className="scroll-mt-16">
-        <WingFilter
-          selectedWing={selectedWing}
-          onSelectWing={(wing) => setSelectedWing(wing)}
-        />
-      </div>
 
-      {/* 4. Event Scroller (Arrival, Aarti, Cultural - Prasad & Visarjan Removed) */}
-      <div id="events-section" className="scroll-mt-16">
-        <EventScroller
-          events={events}
-          activeCategory={activeCategory}
-          onSelectCategory={(cat) => setActiveCategory(cat)}
-          onShareWhatsApp={handleShareWhatsApp}
-        />
-      </div>
+
+      {/* 4. Event Scroller */}
+      {config?.tabs?.cultural?.enabled !== false && (
+        <div id="events-section" className="scroll-mt-16">
+          <EventScroller
+            events={events}
+            activeCategory={activeCategory}
+            onSelectCategory={(cat) => setActiveCategory(cat)}
+            onShareWhatsApp={handleShareWhatsApp}
+          />
+        </div>
+      )}
 
       {/* 5. Main Content Sections */}
       <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 space-y-8">
         
-        {/* SIMPLIFIED DAILY MAHA AARTI & LIVE COUNTDOWN (Image 1 Requirement) */}
+        {/* DAILY MAHA AARTI & LIVE COUNTDOWN */}
         {config?.tabs?.aarti?.enabled !== false && (
           <AartiCard onShareWhatsApp={handleShareWhatsApp} />
         )}
 
-        {/* 10-DAY DATE-WISE FESTIVAL SCHEDULE (Image 1 Requirement) */}
-        <TenDaysSchedule onShareWhatsApp={handleShareWhatsApp} />
+        {/* 10-DAY FESTIVAL SCHEDULE */}
+        {config?.tabs?.schedule?.enabled !== false && (
+          <TenDaysSchedule onShareWhatsApp={handleShareWhatsApp} />
+        )}
 
-        {/* UPCOMING & YEARLY EVENTS TAB (Image 1 & Image 2 Requirement) */}
-        <UpcomingEvents onShareWhatsApp={handleShareWhatsApp} />
+        {/* UPCOMING & YEARLY EVENTS */}
+        {(config?.tabs?.cultural?.enabled !== false || config?.tabs?.upcoming?.enabled !== false) && (
+          <UpcomingEvents 
+            onShareWhatsApp={handleShareWhatsApp} 
+            onOpenUpcomingCalendar={onOpenUpcomingCalendar} 
+          />
+        )}
 
-        {/* PAST EVENT PHOTOS GALLERY (Image 2 Requirement) */}
-        <PhotoGallery onShareWhatsApp={handleShareWhatsApp} />
+        {/* PAST EVENT PHOTOS GALLERY */}
+        {config?.tabs?.gallery?.enabled !== false && (
+          <PhotoGallery onShareWhatsApp={handleShareWhatsApp} />
+        )}
 
         {/* SOCIETY RULES */}
         {config?.tabs?.rules?.enabled !== false && (
@@ -148,13 +154,15 @@ const Home = ({ onOpenWhatsAppQR, onOpenSidebar }) => {
           </div>
         )}
 
-        {/* EMERGENCY CONTACTS & SOCIETY EMAIL (Image 1 Requirement) */}
+        {/* EMERGENCY CONTACTS & SOCIETY EMAIL */}
         {config?.tabs?.contacts?.enabled !== false && (
           <EmergencyContacts contacts={contacts} />
         )}
 
         {/* ABOUT MANDAL & COMMUNITY SECURITY AT THE END */}
-        <AboutMandal onShareWhatsApp={handleShareWhatsApp} />
+        {config?.tabs?.mandalInfo?.enabled !== false && (
+          <AboutMandal onShareWhatsApp={handleShareWhatsApp} />
+        )}
 
       </div>
 

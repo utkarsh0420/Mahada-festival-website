@@ -11,6 +11,7 @@ import AdminLoginModal from "./components/AdminLoginModal";
 import WhatsAppJoinModal from "./components/WhatsAppJoinModal";
 import Sidebar from "./components/Sidebar";
 import AIBappaChatbot from "./components/AIBappaChatbot";
+import UpcomingEventsCalendarModal from "./components/UpcomingEventsCalendarModal";
 import { 
   ResidentPollsModal, 
   VolunteerSevaModal, 
@@ -27,12 +28,21 @@ const MainApp = () => {
   const [isAdminLoginModalOpen, setIsAdminLoginModalOpen] = useState(false);
   const [isWhatsAppQROpen, setIsWhatsAppQROpen] = useState(false);
 
+  // Upcoming & Yearly Events Calendar Modal State
+  const [isUpcomingCalendarOpen, setIsUpcomingCalendarOpen] = useState(false);
+  const [upcomingCalendarTab, setUpcomingCalendarTab] = useState("festival");
+
   // Sidebar & Interactive Feature Modals State
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isPollsOpen, setIsPollsOpen] = useState(false);
   const [isVolunteerOpen, setIsVolunteerOpen] = useState(false);
   const [isWingsOpen, setIsWingsOpen] = useState(false);
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
+
+  const handleOpenUpcomingCalendar = (tab = "festival") => {
+    setUpcomingCalendarTab(tab);
+    setIsUpcomingCalendarOpen(true);
+  };
 
   if (loading) {
     return (
@@ -62,6 +72,14 @@ const MainApp = () => {
   }
 
   const handleSidebarAction = (itemId, targetSection) => {
+    if (itemId === "schedule") {
+      handleOpenUpcomingCalendar("10days");
+      return;
+    }
+    if (itemId === "upcoming") {
+      handleOpenUpcomingCalendar("festival");
+      return;
+    }
     if (itemId === "polls") {
       setIsPollsOpen(true);
       return;
@@ -125,6 +143,7 @@ const MainApp = () => {
         onOpenAdminLogin={() => setIsAdminLoginModalOpen(true)}
         onOpenAdminDashboard={() => setIsAdminDashboardOpen(true)}
         onOpenWhatsAppQR={() => setIsWhatsAppQROpen(true)}
+        onOpenUpcomingCalendar={handleOpenUpcomingCalendar}
       />
 
       {/* Main Public Festival Portal */}
@@ -132,6 +151,7 @@ const MainApp = () => {
         <Home
           onOpenWhatsAppQR={() => setIsWhatsAppQROpen(true)}
           onOpenSidebar={() => setIsSidebarOpen(true)}
+          onOpenUpcomingCalendar={handleOpenUpcomingCalendar}
         />
       </main>
 
@@ -160,6 +180,13 @@ const MainApp = () => {
       <WhatsAppJoinModal
         isOpen={isWhatsAppQROpen}
         onClose={() => setIsWhatsAppQROpen(false)}
+      />
+
+      {/* Upcoming & Yearly Events Calendar Structured Pop-Up Modal */}
+      <UpcomingEventsCalendarModal
+        isOpen={isUpcomingCalendarOpen}
+        onClose={() => setIsUpcomingCalendarOpen(false)}
+        defaultTab={upcomingCalendarTab}
       />
 
       {/* Interactive Feature Modals */}

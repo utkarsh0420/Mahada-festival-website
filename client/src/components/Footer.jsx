@@ -47,22 +47,26 @@ const Footer = ({ onOpenAdminLogin }) => {
             </div>
           </div>
 
-          {/* 4 Participating Buildings Info */}
+          {/* Participating Buildings Info */}
           <div className="text-center">
             <div className="inline-block bg-maroon-850 px-5 py-3 rounded-2xl border border-gold-500/40 shadow-inner">
               <span className="text-xs text-gold-300 font-bold block uppercase tracking-wide">
-                {language === "mr" ? "सहभागी ४ इमारतींची एकता" : "Unity of 4 Buildings"}
+                {language === "mr" ? "सहभागी इमारतींची एकता" : "Participating Buildings"}
               </span>
               <span className="text-xs sm:text-sm font-black text-white tracking-wide mt-1 block font-heading">
-                G (नंदादेवी) • H (निलगिरी) • J (पूर्वांचल) • K (गोवर्धन)
+                {config?.wings && config.wings.length > 0
+                  ? config.wings.map(w => w.nameMr || `${w.code} विंग`).join(" • ")
+                  : (config?.participatingWings || ["G", "H", "J", "K"]).map(w => `${w} विंग`).join(" • ")}
               </span>
-              <a 
-                href="mailto:mhadatowersutsav@gmail.com" 
-                className="text-[11px] text-gold-300/90 hover:text-white flex items-center justify-center gap-1 mt-1.5 underline"
-              >
-                <Mail className="w-3 h-3" />
-                <span>mhadatowersutsav@gmail.com</span>
-              </a>
+              {(config?.mandalInfo?.email || config?.email) && (
+                <a 
+                  href={`mailto:${config?.mandalInfo?.email || config?.email}`} 
+                  className="text-[11px] text-gold-300/90 hover:text-white flex items-center justify-center gap-1 mt-1.5 underline"
+                >
+                  <Mail className="w-3 h-3" />
+                  <span>{config?.mandalInfo?.email || config?.email}</span>
+                </a>
+              )}
             </div>
           </div>
 

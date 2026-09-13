@@ -1,4 +1,4 @@
-﻿import express from "express";
+import express from "express";
 import Contact from "../models/Contact.js";
 import { protectAdmin } from "../middleware/authMiddleware.js";
 
@@ -28,8 +28,8 @@ router.get("/", async (req, res) => {
 router.post("/", protectAdmin, async (req, res) => {
   try {
     const { nameMr, nameEn, roleMr, roleEn, wing, phone, type, order } = req.body;
-    if (!nameMr || !roleMr || !phone) {
-      return res.status(400).json({ success: false, message: "नाव, पद आणि फोन नंबर आवश्यक आहे" });
+    if (!nameMr || !roleMr) {
+      return res.status(400).json({ success: false, message: "नाव आणि पद आवश्यक आहे" });
     }
 
     const contact = new Contact({
@@ -38,7 +38,7 @@ router.post("/", protectAdmin, async (req, res) => {
       roleMr,
       roleEn: roleEn || "",
       wing: wing || "सर्व विंग्ज",
-      phone,
+      phone: phone || "",
       type: type || "committee",
       order: order || 0
     });

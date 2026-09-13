@@ -1,17 +1,38 @@
 import React from "react";
-import { Building2, Sparkles } from "lucide-react";
+import { Building2 } from "lucide-react";
 import { useLanguage } from "../context/LanguageContext";
-
-export const WINGS_CONFIG = [
-  { key: "All", code: "All", nameMr: "सर्व इमारती (All)", nameEn: "All Buildings", sacredName: "सर्व ४ इमारती" },
-  { key: "G", code: "G", nameMr: "G - नंदादेवी (Nandadevi)", nameEn: "G - Nandadevi", sacredName: "नंदादेवी (Nandadevi)" },
-  { key: "H", code: "H", nameMr: "H - निलगिरी (Nilgiri)", nameEn: "H - Nilgiri", sacredName: "निलगिरी (Nilgiri)" },
-  { key: "J", code: "J", nameMr: "J - पूर्वांचल (Purvanchal)", nameEn: "J - Purvanchal", sacredName: "पूर्वांचल (Purvanchal)" },
-  { key: "K", code: "K", nameMr: "K - गोवर्धन (Govardhan)", nameEn: "K - Govardhan", sacredName: "गोवर्धन (Govardhan)" },
-];
+import { useConfig } from "../context/ConfigContext";
 
 const WingFilter = ({ selectedWing, onSelectWing }) => {
-  const { language, t } = useLanguage();
+  const { language } = useLanguage();
+  const { config } = useConfig();
+
+  // If wings tab is disabled by admin, return null
+  if (config?.tabs?.wings && !config.tabs.wings.enabled) {
+    return null;
+  }
+
+  const wingsList = [
+    { code: "All", nameMr: "सर्व इमारती (All)", nameEn: "All Buildings" }
+  ];
+
+  if (config?.wings && config.wings.length > 0) {
+    config.wings.forEach((w) => {
+      wingsList.push({
+        code: w.code,
+        nameMr: w.nameMr || `${w.code} - ${w.sacredNameMr || ""}`,
+        nameEn: w.nameEn || `${w.code} - ${w.sacredNameEn || ""}`
+      });
+    });
+  } else if (config?.participatingWings && config.participatingWings.length > 0) {
+    config.participatingWings.forEach((code) => {
+      wingsList.push({
+        code,
+        nameMr: `विंग ${code}`,
+        nameEn: `Wing ${code}`
+      });
+    });
+  }
 
   return (
     <div className="w-full bg-[#FAF5EB] border-y-2 border-gold-400/60 py-3 px-3 shadow-xs">
@@ -20,7 +41,7 @@ const WingFilter = ({ selectedWing, onSelectWing }) => {
         <div className="flex items-center gap-2 text-xs sm:text-sm text-maroon-950 font-bold">
           <Building2 className="w-4 h-4 sm:w-5 sm:h-5 text-maroon-800 flex-shrink-0" />
           <span>
-            {language === "mr" ? "सहभागी इमारती (४ विंग्ज):" : "Participating Buildings (4 Wings):"}
+            {language === "mr" ? "सहभागी इमारती:" : "Participating Buildings:"}
           </span>
           <span className="hidden lg:inline text-maroon-700 font-medium text-xs">
             {language === "mr" 
@@ -32,7 +53,7 @@ const WingFilter = ({ selectedWing, onSelectWing }) => {
 
         {/* Wing Pills Scroller */}
         <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-0.5">
-          {WINGS_CONFIG.map((wing) => {
+          {wingsList.map((wing) => {
             const isSelected =
               (wing.code === "All" && (selectedWing === "All" || !selectedWing)) ||
               selectedWing === wing.code;

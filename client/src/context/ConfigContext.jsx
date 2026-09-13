@@ -10,11 +10,12 @@ const DEFAULT_CONFIG = {
   regNo: "१२४३/२०२५ - पुणे",
   festivalYear: "२०२६",
   festivalStatus: "उत्सव सुरू आहे (Festival Live)",
-  marqueeText: "गणपती बाप्पा मोरया! दैनिक महाआरती सकाळी ८:३० व रात्री ८:०० वाजता | आजची महाआरती इमारत G विंग यजमान | सर्व भाविकांनी आरतीला उपस्थित राहावे.",
+  marqueeText: "गणपती बाप्पा मोरया! दैनिक महाआरती सकाळी ८:३० व रात्री ८:०० वाजता | सर्व भाविकांनी आरतीला उपस्थित राहावे.",
   marqueeActive: true,
   participatingWings: ["G", "H", "J", "K"],
   whatsAppCommunityLink: "https://chat.whatsapp.com/sample-mhada-ganpati-community",
   emergencyHelpline: "+91 98220 11223",
+  email: "mhadatowersutsavmandal@gmail.com",
   tabs: {
     arrival: { enabled: true, approved: true, labelMr: "श्रींचे आगमन", labelEn: "Ganpati Arrival", order: 1 },
     aarti: { enabled: true, approved: true, labelMr: "दैनिक महाआरती", labelEn: "Aarti Timings", order: 2 },
@@ -27,22 +28,14 @@ const DEFAULT_CONFIG = {
     ownersNotice: { enabled: false, approved: false, labelMr: "वर्गणी व सभा अपडेट", labelEn: "Owners & Mandal Info", order: 9 },
     rules: { enabled: true, approved: true, labelMr: "मंडळ नियमावली", labelEn: "Society Rules", order: 10 },
     whatsapp: { enabled: true, approved: true, labelMr: "व्हॉट्सॲप कम्युनिटी", labelEn: "WhatsApp Group QR", order: 11 },
-    contacts: { enabled: true, approved: true, labelMr: "संपर्क व मदत केंद्र", labelEn: "Emergency & Committee", order: 12 }
+    contacts: { enabled: true, approved: true, labelMr: "संपर्क व मदत केंद्र", labelEn: "Emergency & Committee", order: 12 },
+    newsletter: { enabled: true, approved: true, labelMr: "दैनिक वृत्तपत्र", labelEn: "Daily Bulletin", order: 13 },
+    wings: { enabled: true, approved: true, labelMr: "इमारती (४ विंग्ज)", labelEn: "4 Buildings", order: 14 },
+    polls: { enabled: true, approved: true, labelMr: "रहिवासी मतदान", labelEn: "Resident Polls", order: 15 },
+    volunteer: { enabled: true, approved: true, labelMr: "सहभाग व सेवा", labelEn: "Volunteer Seva", order: 16 },
+    mandalInfo: { enabled: true, approved: true, labelMr: "मंडळ माहिती व सुरक्षा", labelEn: "Mandal Info", order: 17 }
   },
-  sidebarMenu: [
-    { id: "dashboard", labelMr: "मुख्य पृष्ठ", labelEn: "Dashboard", badge: "", badgeType: "active", enabled: true, order: 1, targetSection: "top", icon: "LayoutDashboard" },
-    { id: "liveUpdates", labelMr: "दैनिक वृत्तपत्र", labelEn: "Daily Bulletin", badge: "LIVE", badgeType: "pill-red", enabled: true, order: 2, targetSection: "marquee", icon: "Sparkles" },
-    { id: "aartiSchedule", labelMr: "दैनिक महाआरती", labelEn: "Daily Maha Aarti", badge: "आरती", badgeType: "badge-gold", enabled: true, order: 3, targetSection: "aarti", icon: "Flame" },
-    { id: "schedule", labelMr: "१० दिवसांचे वेळापत्रक", labelEn: "10-Day Schedule", badge: "१० दिवस", badgeType: "badge-gold", enabled: true, order: 4, targetSection: "schedule", icon: "Calendar" },
-    { id: "upcoming", labelMr: "आगामी कार्यक्रम", labelEn: "Upcoming Events", badge: "नवीन", badgeType: "badge-gold", enabled: true, order: 5, targetSection: "upcoming", icon: "Calendar" },
-    { id: "wings", labelMr: "इमारती (४ विंग्ज)", labelEn: "4 Buildings", badge: "", badgeType: "default", enabled: true, order: 6, targetSection: "wings", icon: "Building2" },
-    { id: "polls", labelMr: "मतदान", labelEn: "Resident Polls", badge: "", badgeType: "default", enabled: true, order: 7, targetSection: "polls", icon: "BarChart2" },
-    { id: "volunteer", labelMr: "सहभाग", labelEn: "Volunteer Seva", badge: "", badgeType: "default", enabled: true, order: 8, targetSection: "volunteer", icon: "Users" },
-    { id: "gallery", labelMr: "छायाचित्रे", labelEn: "Photo Gallery", badge: "", badgeType: "default", enabled: true, order: 9, targetSection: "gallery", icon: "Image" },
-    { id: "contacts", labelMr: "संपर्क व ईमेल", labelEn: "Helplines & Email", badge: "", badgeType: "default", enabled: true, order: 10, targetSection: "contacts", icon: "PhoneCall" },
-    { id: "mandalInfo", labelMr: "मंडळ माहिती व सुरक्षा", labelEn: "Mandal Info & Security", badge: "", badgeType: "default", enabled: true, order: 11, targetSection: "mandal-info", icon: "Info" },
-    { id: "adminLogin", labelMr: "व्यवस्थापक लॉगिन", labelEn: "Society Admin Login", badge: "", badgeType: "default", enabled: true, order: 12, targetSection: "admin-login", icon: "Shield" }
-  ],
+  sidebarMenu: [],
   sidebarSettings: {
     showFloatingTrigger: true,
     bottomCardTitle: "All 4 Buildings",
@@ -50,143 +43,68 @@ const DEFAULT_CONFIG = {
     bottomCardTagline: "❤️ ४ विंग्स, एकच परिवार",
     bottomCardSubtag: "सहकार्य • शिस्त • अखंड भक्ती"
   },
-  dailyAartiSchedule: [
-    {
-      dayNumber: 1,
-      dateStr: "दिवस १ (श्री गणेश चतुर्थी - ७ सप्टेंबर)",
-      hostWing: "G WING - नंदादेवी (Nandadevi)",
-      hostLead: "श्री. सचिन पाटील (फ्लॅट G-402)",
-      morningTime: "सकाळी ०८:३० वाजता",
-      eveningTime: "रात्री ०८:०० वाजता",
-      morningRitual: "श्री गणरायाची विधिवत प्राणप्रतिष्ठा व प्रभात आरती",
-      eveningRitual: "संध्याकाळची भव्य धूपारती व मंत्रपुष्पांजली",
-      specialPrasad: "ताजे उकडीचे मोदक व पेढे",
-      isCurrentDay: true
-    },
-    {
-      dayNumber: 2,
-      dateStr: "दिवस २ (ऋषी पंचमी - ८ सप्टेंबर)",
-      hostWing: "H WING - निलगिरी (Nilgiri)",
-      hostLead: "श्री. विजय पवार (फ्लॅट H-301)",
-      morningTime: "सकाळी ०८:३० वाजता",
-      eveningTime: "रात्री ०८:०० वाजता",
-      morningRitual: "ऋषी पंचमी विशेष पूजा व प्रभात आरती",
-      eveningRitual: "धूप आरती व स्थानिक भजनी मंडळ",
-      specialPrasad: "पंचखाद्य व केळी प्रसाद",
-      isCurrentDay: false
-    },
-    {
-      dayNumber: 3,
-      dateStr: "दिवस ३ (गौरी आवाहन - ९ सप्टेंबर)",
-      hostWing: "J WING - पूर्वांचल (Purvanchal)",
-      hostLead: "श्री. निलेश मोरे (फ्लॅट J-202)",
-      morningTime: "सकाळी ०८:३० वाजता",
-      eveningTime: "रात्री ०८:०० वाजता",
-      morningRitual: "श्री महालक्ष्मी / गौरी आवाहन व प्रभात आरती",
-      eveningRitual: "संध्या महाआरती व महिला मंडळाचे पारंपरिक खेळ",
-      specialPrasad: "रवा-नारळ लाडू",
-      isCurrentDay: false
-    },
-    {
-      dayNumber: 4,
-      dateStr: "दिवस ४ (गौरी पूजन - १० सप्टेंबर)",
-      hostWing: "K WING - गोवर्धन (Govardhan)",
-      hostLead: "श्री. गणेश जाधव (फ्लॅट K-603)",
-      morningTime: "सकाळी ०८:३० वाजता",
-      eveningTime: "रात्री ०८:०० वाजता",
-      morningRitual: "गौरी पूजन व काकड आरती",
-      eveningRitual: "भव्य धूपारती व बाल गोपाळांचे सांस्कृतिक कार्यक्रम",
-      specialPrasad: "गोड बुंदी व सुकामेवा",
-      isCurrentDay: false
-    },
-    {
-      dayNumber: 5,
-      dateStr: "दिवस ५ (विशेष आरती दिन - ११ सप्टेंबर)",
-      hostWing: "G WING - नंदादेवी (Nandadevi)",
-      hostLead: "श्री. सतीश कांबळे (फ्लॅट G-101)",
-      morningTime: "सकाळी ०८:३० वाजता",
-      eveningTime: "रात्री ०८:०० वाजता",
-      morningRitual: "प्रभात महाआरती व अथर्वशीर्ष पठण",
-      eveningRitual: "धूप आरती व टाळ-मृदुंग संकीर्तन",
-      specialPrasad: "पंचामृत व पेढे",
-      isCurrentDay: false
-    },
-    {
-      dayNumber: 6,
-      dateStr: "दिवस ६ (एकता भजन संध्या - १२ सप्टेंबर)",
-      hostWing: "H WING - निलगिरी (Nilgiri)",
-      hostLead: "श्री. राहुल गायकवाड (फ्लॅट H-405)",
-      morningTime: "सकाळी ०८:३० वाजता",
-      eveningTime: "रात्री ०८:०० वाजता",
-      morningRitual: "काकड आरती व श्री गणपती स्तोत्र",
-      eveningRitual: "संध्या महाआरती व स्थानिक भजन",
-      specialPrasad: "गूळ-खोबरे व लाडू",
-      isCurrentDay: false
-    },
-    {
-      dayNumber: 7,
-      dateStr: "दिवस ७ (सामूहिक सत्यविनायक पूजा - १३ सप्टेंबर)",
-      hostWing: "J WING - पूर्वांचल (Purvanchal)",
-      hostLead: "श्री. निलेश मोरे व पूर्वांचल रहिवासी",
-      morningTime: "सकाळी ०८:३० वाजता",
-      eveningTime: "रात्री ०८:०० वाजता",
-      morningRitual: "सत्यविनायक महापूजा संकल्प व काकड आरती",
-      eveningRitual: "धूप आरती व ज्येष्ठ नागरिक सन्मान सोहळा",
-      specialPrasad: "सत्यनारायण शिरा प्रसाद",
-      isCurrentDay: false
-    },
-    {
-      dayNumber: 8,
-      dateStr: "दिवस ८ (महिला मंडळ महाआरती - १४ सप्टेंबर)",
-      hostWing: "K WING - गोवर्धन (Govardhan)",
-      hostLead: "श्रीमती सुनीता जाधव व महिला मंच",
-      morningTime: "सकाळी ०८:३० वाजता",
-      eveningTime: "रात्री ०८:०० वाजता",
-      morningRitual: "प्रभात आरती व श्री सूक्त पठण",
-      eveningRitual: "संध्या महाआरती व मंत्रपुष्पांजली",
-      specialPrasad: "केसर पेढा व खिरीचा प्रसाद",
-      isCurrentDay: false
-    },
-    {
-      dayNumber: 9,
-      dateStr: "दिवस ९ (भव्य दीपोत्सव - १५ सप्टेंबर)",
-      hostWing: "G & H WING संयुक्त यजमान (नंदादेवी व निलगिरी)",
-      hostLead: "श्री. सचिन पाटील व श्री. विजय पवार",
-      morningTime: "सकाळी ०८:३० वाजता",
-      eveningTime: "रात्री ०८:०० वाजता",
-      morningRitual: "प्रभात महाआरती व मोदक नैवेद्य",
-      eveningRitual: "भव्य दीप प्रज्वलन व धूप आरती",
-      specialPrasad: "काजू कतली व बदाम लाडू",
-      isCurrentDay: false
-    },
-    {
-      dayNumber: 10,
-      dateStr: "दिवस १० (सांगता महाआरती - १६ सप्टेंबर)",
-      hostWing: "सर्व ४ इमारती संयुक्त (G • H • J • K WINGS)",
-      hostLead: "समस्त म्हाडा टॉवर्स सोसायटी परिवार",
-      morningTime: "सकाळी ०८:३० वाजता",
-      eveningTime: "रात्री ०८:०० वाजता",
-      morningRitual: "उत्तरपूजा संकल्प व प्रभात महाआरती",
-      eveningRitual: "सांगता महाआरती, मंत्रपुष्पांजली व जयघोष",
-      specialPrasad: "महाप्रसाद मोदक व नारळ",
-      isCurrentDay: false
-    }
-  ],
+  dailyAartiSchedule: [],
+  newsletter: {
+    edition: "",
+    dateStr: "",
+    headline: "",
+    subheadline: "",
+    bappaDarshanQuote: "",
+    darshanPhotoUrl: "",
+    darshanPhotoCaption: "",
+    todaysHighlights: [],
+    yesterdayHighlights: [],
+    todaysHostWing: "",
+    hostLead: "",
+    prasadSpecial: "",
+    specialNote: ""
+  },
+  wings: [],
+  rules: [],
+  gallery: [],
+  poll: {
+    active: true,
+    question: "",
+    options: [],
+    totalVotes: 0
+  },
+  volunteerSeva: {
+    active: true,
+    title: "",
+    description: "",
+    roles: []
+  },
   mandalInfo: {
-    historyMr: "पिंपरी चिंचवड मधील म्हाडा टॉवर्स संकुलातील ४ विंग्ज (G-नंदादेवी, H-निलगिरी, J-पूर्वांचल, K-गोवर्धन) मधील सर्व रहिवासी, मालक व भाडेकरू कुटुंबे एकत्र येऊन दरवर्षी अत्यंत उत्साहात, शिस्तबद्ध व भव्य स्वरूपात गणेशोत्सव साजरा करतात. '४ विंग्स, एकच परिवार' या संकल्पनेतून सामाजिक सलोखा, चोख सुरक्षा व पर्यावरण संवर्धन जपले जाते.",
+    historyMr: "",
+    historyEn: "",
     establishedYear: "२०२४",
-    regDetails: "नोंदणी क्र: १२४३/२०२५ - पुणे (धर्मादाय सहआयुक्त मान्यताप्राप्त)",
+    regDetails: "",
     mottoMr: "४ विंग्स, एकच परिवार (सहकार्य • शिस्त • अखंड भक्ती)",
-    officeAddressMr: "मध्यवर्ती उत्सव मंडप, म्हाडा टॉवर्स संकुल, पिंपरी वाघेरे, पिंपरी चिंचवड, पुणे - ४११०१७",
-    helpline: "+91 98220 11223",
-    email: "mhadatowersutsav@gmail.com",
+    officeAddressMr: "",
+    helpline: "",
+    email: "mhadatowersutsavmandal@gmail.com",
     bankDetails: {
-      accountName: "MHADA TOWERS UTSAV MANDAL",
-      bankName: "Bank of Maharashtra - Pimpri Branch",
-      accountNo: "60459821034",
-      ifsc: "MAHB0000123",
-      upiId: "mhadatowers@upi"
-    }
+      accountName: "",
+      bankName: "",
+      accountNo: "",
+      ifsc: "",
+      upiId: ""
+    },
+    pillars: [],
+    committeeMembers: [
+      { roleMr: "अध्यक्षा", roleEn: "President", nameMr: "सौ. प्रियांका मयूर देशपांडे", nameEn: "Mrs. Priyanka Mayur Deshpande", wing: "जे – १५०३ (J-1503)", phone: "" },
+      { roleMr: "उपाध्यक्षा", roleEn: "Vice President", nameMr: "सौ. हर्षानी निकुंभ", nameEn: "Mrs. Harshani Nikumbh", wing: "के – १००१ (K-1001)", phone: "" },
+      { roleMr: "सचिव", roleEn: "Secretary", nameMr: "सौ. अर्चना सुधींद्र मठड", nameEn: "Mrs. Archana Sudhindra Mathad", wing: "जी – २२०४, जे – ५०३ (G-2204, J-503)", phone: "" },
+      { roleMr: "खजिनदार", roleEn: "Treasurer", nameMr: "श्री. अनुराग माळी", nameEn: "Mr. Anurag Mali", wing: "के – १५०३ (K-1503)", phone: "" },
+      { roleMr: "सदस्या", roleEn: "Committee Member", nameMr: "श्रीमती कल्पना अविनाश गाजरे", nameEn: "Mrs. Kalpana Avinash Gajare", wing: "के – १००२-१८०२ (K-1002-1802)", phone: "" },
+      { roleMr: "सदस्या", roleEn: "Committee Member", nameMr: "सौ. शीतल प्रफुल साठे", nameEn: "Mrs. Sheetal Praful Sathe", wing: "जी – ११०४ (G-1104)", phone: "" },
+      { roleMr: "सदस्या", roleEn: "Committee Member", nameMr: "सौ. कुंदा राजेंद्र सौंदणकर", nameEn: "Mrs. Kunda Rajendra Saundankar", wing: "एच – १०३ (H-103)", phone: "" },
+      { roleMr: "सदस्य", roleEn: "Committee Member", nameMr: "श्री. सतीश बालकु फडके", nameEn: "Mr. Satish Balku Phadke", wing: "के – १५०१ (K-1501)", phone: "" },
+      { roleMr: "सदस्या", roleEn: "Committee Member", nameMr: "सौ. आदिती साबू", nameEn: "Mrs. Aditi Sabu", wing: "जे – ११०२ (J-1102)", phone: "" },
+      { roleMr: "सदस्य", roleEn: "Committee Member", nameMr: "श्री. तेजस माळी", nameEn: "Mr. Tejas Mali", wing: "जी – १००१ (G-1001)", phone: "" },
+      { roleMr: "सदस्या", roleEn: "Committee Member", nameMr: "सौ. प्रतिमा प्रशांत कुलकर्णी", nameEn: "Mrs. Pratima Prashant Kulkarni", wing: "एच – १६०४ (H-1604)", phone: "" },
+      { roleMr: "सदस्य", roleEn: "Committee Member", nameMr: "श्री. चेतनकुमार उत्तमराव सौंदाणे", nameEn: "Mr. Chetankumar Uttamrao Soundane", wing: "के – १०३ (K-103)", phone: "" }
+    ]
   }
 };
 
@@ -195,7 +113,14 @@ export const ConfigProvider = ({ children }) => {
     try {
       const cached = localStorage.getItem("mhada_utsav_config");
       if (cached) {
-        return { ...DEFAULT_CONFIG, ...JSON.parse(cached) };
+        const parsed = JSON.parse(cached);
+        if (parsed.email === "mhadatowersutsav@gmail.com") parsed.email = "mhadatowersutsavmandal@gmail.com";
+        if (parsed.mandalInfo?.email === "mhadatowersutsav@gmail.com") parsed.mandalInfo.email = "mhadatowersutsavmandal@gmail.com";
+        if (!parsed.mandalInfo?.committeeMembers || parsed.mandalInfo.committeeMembers.length <= 5) {
+          if (!parsed.mandalInfo) parsed.mandalInfo = {};
+          parsed.mandalInfo.committeeMembers = DEFAULT_CONFIG.mandalInfo.committeeMembers;
+        }
+        return { ...DEFAULT_CONFIG, ...parsed };
       }
     } catch (e) {
       console.error(e);
@@ -208,19 +133,26 @@ export const ConfigProvider = ({ children }) => {
     try {
       const res = await API.get("/config");
       if (res.data?.success && res.data.config) {
+        const serverConfig = res.data.config;
         const merged = {
           ...DEFAULT_CONFIG,
-          ...res.data.config,
-          sidebarMenu: res.data.config.sidebarMenu?.length ? res.data.config.sidebarMenu : DEFAULT_CONFIG.sidebarMenu,
-          sidebarSettings: res.data.config.sidebarSettings?.bottomCardTagline ? res.data.config.sidebarSettings : DEFAULT_CONFIG.sidebarSettings,
-          dailyAartiSchedule: res.data.config.dailyAartiSchedule?.length ? res.data.config.dailyAartiSchedule : DEFAULT_CONFIG.dailyAartiSchedule,
-          mandalInfo: res.data.config.mandalInfo?.mottoMr ? res.data.config.mandalInfo : DEFAULT_CONFIG.mandalInfo
+          ...serverConfig,
+          tabs: { ...DEFAULT_CONFIG.tabs, ...(serverConfig.tabs || {}) },
+          sidebarSettings: { ...DEFAULT_CONFIG.sidebarSettings, ...(serverConfig.sidebarSettings || {}) },
+          mandalInfo: {
+            ...DEFAULT_CONFIG.mandalInfo,
+            ...(serverConfig.mandalInfo || {}),
+            bankDetails: {
+              ...DEFAULT_CONFIG.mandalInfo.bankDetails,
+              ...(serverConfig.mandalInfo?.bankDetails || {})
+            }
+          }
         };
         setConfig(merged);
         localStorage.setItem("mhada_utsav_config", JSON.stringify(merged));
       }
     } catch (err) {
-      console.warn("Using default festival config:", err.message);
+      console.warn("Using cached/default festival config:", err.message);
     } finally {
       setLoading(false);
     }
@@ -249,7 +181,6 @@ export const ConfigProvider = ({ children }) => {
       }
       return { success: false, message: res.data.message };
     } catch (err) {
-      // Local fallback
       const updated = { ...config, tabs };
       saveLocal(updated);
       return { success: true, message: "स्थानिकरित्या जतन झाले" };
@@ -267,6 +198,126 @@ export const ConfigProvider = ({ children }) => {
       return { success: false, message: res.data.message };
     } catch (err) {
       const updated = { ...config, ...generalData };
+      saveLocal(updated);
+      return { success: true, message: "स्थानिकरित्या जतन झाले" };
+    }
+  };
+
+  const updateNewsletter = async (newsletter) => {
+    try {
+      const res = await API.put("/config/newsletter", { newsletter });
+      if (res.data.success) {
+        const updated = { ...config, newsletter: res.data.newsletter };
+        saveLocal(updated);
+        return { success: true };
+      }
+      return { success: false, message: res.data.message };
+    } catch (err) {
+      const updated = { ...config, newsletter };
+      saveLocal(updated);
+      return { success: true, message: "स्थानिकरित्या जतन झाले" };
+    }
+  };
+
+  const updateWings = async (wings) => {
+    try {
+      const res = await API.put("/config/wings", { wings });
+      if (res.data.success) {
+        const updated = { ...config, wings: res.data.wings, participatingWings: res.data.wings.map(w => w.code) };
+        saveLocal(updated);
+        return { success: true };
+      }
+      return { success: false, message: res.data.message };
+    } catch (err) {
+      const updated = { ...config, wings, participatingWings: wings.map(w => w.code) };
+      saveLocal(updated);
+      return { success: true, message: "स्थानिकरित्या जतन झाले" };
+    }
+  };
+
+  const updateRules = async (rules) => {
+    try {
+      const res = await API.put("/config/rules", { rules });
+      if (res.data.success) {
+        const updated = { ...config, rules: res.data.rules };
+        saveLocal(updated);
+        return { success: true };
+      }
+      return { success: false, message: res.data.message };
+    } catch (err) {
+      const updated = { ...config, rules };
+      saveLocal(updated);
+      return { success: true, message: "स्थानिकरित्या जतन झाले" };
+    }
+  };
+
+  const updateGallery = async (gallery) => {
+    try {
+      const res = await API.put("/config/gallery", { gallery });
+      if (res.data.success) {
+        const updated = { ...config, gallery: res.data.gallery };
+        saveLocal(updated);
+        return { success: true };
+      }
+      return { success: false, message: res.data.message };
+    } catch (err) {
+      const updated = { ...config, gallery };
+      saveLocal(updated);
+      return { success: true, message: "स्थानिकरित्या जतन झाले" };
+    }
+  };
+
+  const updatePoll = async (poll) => {
+    try {
+      const res = await API.put("/config/poll", { poll });
+      if (res.data.success) {
+        const updated = { ...config, poll: res.data.poll };
+        saveLocal(updated);
+        return { success: true };
+      }
+      return { success: false, message: res.data.message };
+    } catch (err) {
+      const updated = { ...config, poll };
+      saveLocal(updated);
+      return { success: true, message: "स्थानिकरित्या जतन झाले" };
+    }
+  };
+
+  const castVote = async (optionId) => {
+    try {
+      const res = await API.post("/config/poll/vote", { optionId });
+      if (res.data.success) {
+        const updated = { ...config, poll: res.data.poll };
+        saveLocal(updated);
+        return { success: true, poll: res.data.poll };
+      }
+      return { success: false, message: res.data.message };
+    } catch (err) {
+      // Optimistic local update
+      if (config.poll && config.poll.options) {
+        const newOpts = config.poll.options.map(opt => 
+          opt.id === Number(optionId) ? { ...opt, votes: (opt.votes || 0) + 1 } : opt
+        );
+        const updatedPoll = { ...config.poll, options: newOpts, totalVotes: (config.poll.totalVotes || 0) + 1 };
+        const updated = { ...config, poll: updatedPoll };
+        saveLocal(updated);
+        return { success: true, poll: updatedPoll };
+      }
+      return { success: false, message: "मत नोंदवता आले नाही" };
+    }
+  };
+
+  const updateVolunteerSeva = async (volunteerSeva) => {
+    try {
+      const res = await API.put("/config/volunteer", { volunteerSeva });
+      if (res.data.success) {
+        const updated = { ...config, volunteerSeva: res.data.volunteerSeva };
+        saveLocal(updated);
+        return { success: true };
+      }
+      return { success: false, message: res.data.message };
+    } catch (err) {
+      const updated = { ...config, volunteerSeva };
       saveLocal(updated);
       return { success: true, message: "स्थानिकरित्या जतन झाले" };
     }
@@ -336,6 +387,13 @@ export const ConfigProvider = ({ children }) => {
         refreshConfig: fetchConfig,
         updateTabs,
         updateGeneral,
+        updateNewsletter,
+        updateWings,
+        updateRules,
+        updateGallery,
+        updatePoll,
+        castVote,
+        updateVolunteerSeva,
         updateSidebar,
         updateAartiSchedule,
         updateMandalInfo

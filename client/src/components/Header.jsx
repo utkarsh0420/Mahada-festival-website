@@ -2,14 +2,21 @@ import React, { useState, useEffect } from "react";
 import { 
   Home, Flame, Calendar, Sparkles, Image, Phone,
   LayoutDashboard, LogIn, LogOut, 
-  Menu, X, QrCode, Globe, Mail, ChevronRight
+  Menu, X, QrCode, Globe, Mail, ChevronRight,
+  Trophy, CalendarDays, Table
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useConfig } from "../context/ConfigContext";
 import { useLanguage } from "../context/LanguageContext";
 import { ExpandableTabs } from "./ui/expandable-tabs";
 
-const Header = ({ onOpenAdminLogin, onOpenAdminDashboard, onOpenWhatsAppQR, onOpenSidebar }) => {
+const Header = ({ 
+  onOpenAdminLogin, 
+  onOpenAdminDashboard, 
+  onOpenWhatsAppQR, 
+  onOpenSidebar,
+  onOpenUpcomingCalendar 
+}) => {
   const { admin, logout } = useAuth();
   const { config } = useConfig();
   const { language, toggleLanguage, t } = useLanguage();
@@ -21,8 +28,6 @@ const Header = ({ onOpenAdminLogin, onOpenAdminDashboard, onOpenWhatsAppQR, onOp
       const sectionIds = [
         "top-section",
         "aarti-section",
-        "schedule-section",
-        "upcoming-section",
         "gallery-section",
         "contacts-section",
       ];
@@ -47,7 +52,8 @@ const Header = ({ onOpenAdminLogin, onOpenAdminDashboard, onOpenWhatsAppQR, onOp
       window.scrollTo({ top: 0, behavior: "smooth" });
       return;
     }
-    const el = document.getElementById(id);
+    const cleanId = id.replace("-section", "");
+    const el = document.getElementById(id) || document.getElementById(cleanId);
     if (el) {
       el.scrollIntoView({ behavior: "smooth" });
     } else {
@@ -55,7 +61,7 @@ const Header = ({ onOpenAdminLogin, onOpenAdminDashboard, onOpenWhatsAppQR, onOp
     }
   };
 
-  const navTabs = [
+  const allNavTabs = [
     {
       id: "top-section",
       title: language === "mr" ? "मुख्य पृष्ठ" : "Home",
@@ -73,20 +79,40 @@ const Header = ({ onOpenAdminLogin, onOpenAdminDashboard, onOpenWhatsAppQR, onOp
       onClick: () => scrollToSection("aarti-section"),
     },
     {
-      id: "schedule-section",
-      title: language === "mr" ? "१० दिवसांचे वेळापत्रक" : "10-Day Schedule",
+      id: "schedule-dropdown",
+      title: language === "mr" ? "वेळापत्रक व कार्यक्रम" : "Schedule & Events",
       icon: Calendar,
       iconColor: "text-gold-300",
-      isActive: activeSection === "schedule-section",
-      onClick: () => scrollToSection("schedule-section"),
-    },
-    {
-      id: "upcoming-section",
-      title: language === "mr" ? "आगामी कार्यक्रम" : "Upcoming Events",
-      icon: Sparkles,
-      iconColor: "text-amber-300",
-      isActive: activeSection === "upcoming-section",
-      onClick: () => scrollToSection("upcoming-section"),
+      isActive: false,
+      onClick: () => {
+        // Direct click opens the 10-day schedule pop-up window
+        if (onOpenUpcomingCalendar) onOpenUpcomingCalendar("10days");
+      },
+      hasDropdown: true,
+      dropdownItems: [
+        {
+          id: "10days",
+          title: language === "mr" ? "१० दिवसांचे वेळापत्रक" : "10-Day Festival Schedule",
+          subtitle: language === "mr" ? "गणेश चतुर्थी ते अनंत चतुर्दशी दैनिक पूजा व महाआरती" : "Daily pooja and aarti schedule",
+          icon: Calendar,
+          badge: language === "mr" ? "पॉप-अप" : "POP-UP",
+          badgeColor: "bg-amber-400 text-maroon-950",
+          onClick: () => {
+            if (onOpenUpcomingCalendar) onOpenUpcomingCalendar("10days");
+          },
+        },
+        {
+          id: "upcomingModal",
+          title: language === "mr" ? "आगामी व वार्षिक कार्यक्रम" : "Upcoming & Yearly Events",
+          subtitle: language === "mr" ? "स्पर्धा, हळदी-कुंकू व वर्षभरातील उपक्रम (टेबल)" : "Competitions, sports & initiatives (Table)",
+          icon: Sparkles,
+          badge: language === "mr" ? "पॉप-अप" : "POP-UP",
+          badgeColor: "bg-gold-400 text-maroon-950",
+          onClick: () => {
+            if (onOpenUpcomingCalendar) onOpenUpcomingCalendar("festival");
+          },
+        },
+      ]
     },
     {
       id: "gallery-section",
@@ -106,6 +132,15 @@ const Header = ({ onOpenAdminLogin, onOpenAdminDashboard, onOpenWhatsAppQR, onOp
     },
   ];
 
+  const navTabs = allNavTabs.filter(tab => {
+    if (tab.id === "top-section") return true;
+    if (tab.id === "aarti-section" && config?.tabs?.aarti?.enabled === false) return false;
+    if (tab.id === "schedule-dropdown" && config?.tabs?.schedule?.enabled === false && config?.tabs?.cultural?.enabled === false) return false;
+    if (tab.id === "gallery-section" && config?.tabs?.gallery?.enabled === false) return false;
+    if (tab.id === "contacts-section" && config?.tabs?.contacts?.enabled === false) return false;
+    return true;
+  });
+
   return (
     <header className="sticky top-0 z-40 bg-gradient-to-r from-maroon-950 via-maroon-900 to-maroon-950 text-white shadow-xl border-b-2 border-gold-500/80">
       {/* Top micro gold highlight line */}
@@ -116,7 +151,7 @@ const Header = ({ onOpenAdminLogin, onOpenAdminDashboard, onOpenWhatsAppQR, onOp
           
           {/* 1. Left-aligned Logo & Mandal Title lockup */}
           <div 
-            className="flex items-center gap-2.5 sm:gap-3.5 cursor-pointer group flex-shrink-0" 
+            className="flex items-center gap-2 sm:gap-3.5 cursor-pointer group min-w-0 flex-1" 
             onClick={() => scrollToSection("top-section")}
             title="मुख्य पृष्ठावर जा (Scroll to top)"
           >
@@ -126,45 +161,34 @@ const Header = ({ onOpenAdminLogin, onOpenAdminDashboard, onOpenWhatsAppQR, onOp
               <img
                 src="/logo.jpg"
                 alt="म्हाडा टॉवर्स उत्सव मंडळ लोगो"
-                className="relative w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-full object-cover border-2 border-gold-400 shadow-xl"
+                className="relative w-10 h-10 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-full object-cover border-2 border-gold-400 shadow-xl"
                 onError={(e) => {
                   console.error("Logo failed to load");
                 }}
               />
             </div>
 
-            <div>
+            <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
-                <span className="text-[10px] sm:text-xs font-bold tracking-wider uppercase text-gold-300 bg-maroon-800/90 px-2.5 py-0.5 rounded-full border border-gold-500/40">
+                <span className="text-[9px] sm:text-xs font-bold tracking-wider uppercase text-gold-300 bg-maroon-800/90 px-2 sm:px-2.5 py-0.5 rounded-full border border-gold-500/40 truncate">
                   {config?.regNo ? `नोंदणी: ${config.regNo}` : "Regd No: १२४३/२०२५ - पुणे"}
                 </span>
-                
-                {/* Official Society Email in Header */}
-                <a 
-                  href="mailto:mhadatowersutsav@gmail.com"
-                  onClick={(e) => e.stopPropagation()}
-                  className="hidden lg:inline-flex items-center gap-1 text-[11px] text-gold-200 hover:text-white bg-maroon-850/90 hover:bg-maroon-800 px-2.5 py-0.5 rounded-full border border-gold-500/30 transition"
-                  title="सोसायटी अधिकृत ईमेल"
-                >
-                  <Mail className="w-3 h-3 text-gold-400" />
-                  <span>mhadatowersutsav@gmail.com</span>
-                </a>
               </div>
 
-              <h1 className="text-base sm:text-xl md:text-2xl font-black text-gold-300 tracking-tight leading-snug drop-shadow-sm font-heading">
+              <h1 className="text-xs xs:text-sm sm:text-xl md:text-2xl font-black text-gold-300 tracking-tight leading-snug drop-shadow-sm font-heading truncate">
                 {language === "mr" 
                   ? (config?.mandalNameMr || "म्हाडा टॉवर्स उत्सव मंडळ")
                   : (config?.mandalNameEn || "MHADA Towers Utsav Mandal")
                 }
               </h1>
 
-              <p className="text-[11px] sm:text-xs text-gold-100/90 hidden sm:flex items-center gap-1 font-medium">
+              <p className="text-[11px] sm:text-xs text-gold-100/90 hidden sm:flex items-center gap-1 font-medium truncate">
                 <span>{config?.addressMr || "पिंपरी वाघेरे, पिंपरी चिंचवड, पुणे - ४११०१७"}</span>
               </p>
             </div>
           </div>
 
-          {/* 2. Desktop Navigation Links (Expandable Tabs: only show name when mouse pointer points) */}
+          {/* 2. Desktop Navigation Links (Expandable Tabs with Dropdown Menu for Events & Schedule) */}
           <nav className="hidden lg:flex items-center">
             <ExpandableTabs tabs={navTabs} />
           </nav>
@@ -175,37 +199,37 @@ const Header = ({ onOpenAdminLogin, onOpenAdminDashboard, onOpenWhatsAppQR, onOp
             {/* Language Switcher Toggle */}
             <button
               onClick={toggleLanguage}
-              className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl bg-gold-400 hover:bg-gold-300 text-maroon-950 font-black text-xs sm:text-sm shadow-md transition transform active:scale-95"
+              className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl bg-gold-400 hover:bg-gold-300 text-maroon-950 font-black text-xs sm:text-sm shadow-md transition transform active:scale-95 whitespace-nowrap flex-shrink-0"
               title="Change Language (भाषा बदला)"
             >
-              <Globe className="w-3.5 h-3.5 text-maroon-900" />
-              <span>{language === "mr" ? "English" : "मराठी"}</span>
+              <Globe className="w-3.5 h-3.5 text-maroon-900 flex-shrink-0" />
+              <span className="whitespace-nowrap">{language === "mr" ? "English" : "मराठी"}</span>
             </button>
 
             {/* WhatsApp Community Quick Button */}
             <button
               onClick={onOpenWhatsAppQR}
-              className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md transition"
+              className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md transition whitespace-nowrap flex-shrink-0"
               title="व्हॉट्सॲप कम्युनिटी QR कोड"
             >
-              <QrCode className="w-3.5 h-3.5" />
-              <span className="hidden md:inline">{t("whatsappGroup")}</span>
+              <QrCode className="w-3.5 h-3.5 flex-shrink-0" />
+              <span className="hidden md:inline whitespace-nowrap">{t("whatsappGroup")}</span>
             </button>
 
             {/* Admin Dashboard / Login Button */}
             {admin ? (
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-1 flex-shrink-0">
                 <button
                   onClick={onOpenAdminDashboard}
-                  className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl bg-maroon-800 hover:bg-maroon-700 text-gold-300 font-bold text-xs border border-gold-500/40 shadow transition"
+                  className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl bg-maroon-800 hover:bg-maroon-700 text-gold-300 font-bold text-xs border border-gold-500/40 shadow transition whitespace-nowrap"
                   title="व्यवस्थापक डॅशबोर्ड"
                 >
-                  <LayoutDashboard className="w-3.5 h-3.5 text-gold-400" />
-                  <span className="hidden lg:inline">{t("adminDashboard")}</span>
+                  <LayoutDashboard className="w-3.5 h-3.5 text-gold-400 flex-shrink-0" />
+                  <span className="hidden lg:inline whitespace-nowrap">{t("adminDashboard")}</span>
                 </button>
                 <button
                   onClick={logout}
-                  className="p-1.5 rounded-xl bg-maroon-850 hover:bg-rose-900 text-rose-300 font-bold text-xs border border-rose-500/30 transition"
+                  className="p-1.5 rounded-xl bg-maroon-850 hover:bg-rose-900 text-rose-300 font-bold text-xs border border-rose-500/30 transition flex-shrink-0"
                   title="लॉगआउट"
                 >
                   <LogOut className="w-3.5 h-3.5" />
@@ -214,11 +238,11 @@ const Header = ({ onOpenAdminLogin, onOpenAdminDashboard, onOpenWhatsAppQR, onOp
             ) : (
               <button
                 onClick={onOpenAdminLogin}
-                className="hidden sm:inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl bg-maroon-850 hover:bg-maroon-800 text-gold-300 font-bold text-xs border border-gold-500/40 transition"
+                className="hidden sm:inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl bg-maroon-850 hover:bg-maroon-800 text-gold-300 font-bold text-xs border border-gold-500/40 transition whitespace-nowrap flex-shrink-0"
                 title="व्यवस्थापक लॉगिन"
               >
-                <LogIn className="w-3.5 h-3.5 text-gold-400" />
-                <span className="hidden lg:inline">{t("adminLogin")}</span>
+                <LogIn className="w-3.5 h-3.5 text-gold-400 flex-shrink-0" />
+                <span className="hidden lg:inline whitespace-nowrap">{t("adminLogin")}</span>
               </button>
             )}
 
@@ -243,26 +267,87 @@ const Header = ({ onOpenAdminLogin, onOpenAdminDashboard, onOpenWhatsAppQR, onOp
           {/* Society Email badge on mobile */}
           <div className="flex items-center gap-2 p-2.5 rounded-xl bg-maroon-900/90 border border-gold-500/30 text-xs text-gold-200">
             <Mail className="w-4 h-4 text-gold-400 flex-shrink-0" />
-            <a href="mailto:mhadatowersutsav@gmail.com" className="font-semibold underline truncate">
-              mhadatowersutsav@gmail.com
+            <a href={`mailto:${config?.mandalInfo?.email || config?.email || "mhadatowersutsavmandal@gmail.com"}`} className="font-semibold underline truncate">
+              {config?.mandalInfo?.email || config?.email || "mhadatowersutsavmandal@gmail.com"}
             </a>
           </div>
 
+          {/* 2 Featured Pop-up Cards on Mobile (Top 2) */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            {/* Pop-up 1: 10 Days Schedule */}
+            <button
+              onClick={() => {
+                setMobileMenuOpen(false);
+                if (onOpenUpcomingCalendar) onOpenUpcomingCalendar("10days");
+              }}
+              className="w-full flex items-center justify-between p-3 rounded-2xl bg-gradient-to-r from-amber-900/90 via-maroon-900 to-amber-950/90 border-2 border-gold-400 text-gold-200 shadow-md active:scale-98 transition text-left"
+            >
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="p-2 rounded-xl bg-gold-400 text-maroon-950 font-bold flex-shrink-0 shadow-sm">
+                  <Calendar className="w-4 h-4" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="text-xs font-black text-gold-300 font-heading truncate">
+                    {language === "mr" ? "१० दिवसांचे वेळापत्रक" : "10-Day Festival Schedule"}
+                  </div>
+                  <div className="text-[10px] text-gold-100/80 truncate">
+                    {language === "mr" ? "दैनिक पूजा व महाआरती (पॉप-अप)" : "Daily Pooja & Aarti (Pop-up)"}
+                  </div>
+                </div>
+              </div>
+              <span className="text-[9px] font-black uppercase px-2 py-0.5 rounded-full bg-gold-400 text-maroon-950 flex-shrink-0 ml-1">
+                {language === "mr" ? "पॉप-अप" : "Pop-up"}
+              </span>
+            </button>
+
+            {/* Pop-up 2: Upcoming & Yearly Events */}
+            <button
+              onClick={() => {
+                setMobileMenuOpen(false);
+                if (onOpenUpcomingCalendar) onOpenUpcomingCalendar("festival");
+              }}
+              className="w-full flex items-center justify-between p-3 rounded-2xl bg-gradient-to-r from-maroon-900 via-maroon-850 to-amber-950/90 border-2 border-gold-400 text-gold-200 shadow-md active:scale-98 transition text-left"
+            >
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="p-2 rounded-xl bg-gold-400 text-maroon-950 font-bold flex-shrink-0 shadow-sm">
+                  <Sparkles className="w-4 h-4" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="text-xs font-black text-gold-300 font-heading truncate">
+                    {language === "mr" ? "आगामी व वार्षिक कार्यक्रम" : "Upcoming & Yearly Events"}
+                  </div>
+                  <div className="text-[10px] text-gold-100/80 truncate">
+                    {language === "mr" ? "स्पर्धा व उपक्रम टेबल (पॉप-अप)" : "Competitions & Table (Pop-up)"}
+                  </div>
+                </div>
+              </div>
+              <span className="text-[9px] font-black uppercase px-2 py-0.5 rounded-full bg-gold-400 text-maroon-950 flex-shrink-0 ml-1">
+                {language === "mr" ? "पॉप-अप" : "Pop-up"}
+              </span>
+            </button>
+          </div>
+
+          {/* General Section Links */}
           <div className="grid grid-cols-2 gap-2">
-            {navTabs.map((item) => {
+            {[
+              { id: "top-section", title: language === "mr" ? "मुख्य पृष्ठ" : "Home", icon: Home },
+              { id: "aarti-section", title: language === "mr" ? "दैनिक महाआरती" : "Daily Aarti", icon: Flame },
+              { id: "gallery-section", title: language === "mr" ? "छायाचित्रे" : "Photo Gallery", icon: Image },
+              { id: "contacts-section", title: language === "mr" ? "संपर्क कक्ष" : "Contacts", icon: Phone },
+            ].map((item) => {
               const Icon = item.icon;
               return (
                 <button
                   key={item.id}
                   onClick={() => scrollToSection(item.id)}
                   className={`flex items-center justify-between p-2.5 rounded-xl text-left text-xs font-bold border transition ${
-                    item.isActive 
+                    activeSection === item.id
                       ? "bg-maroon-800 text-gold-300 border-gold-500/50 shadow-xs" 
                       : "bg-maroon-900/80 hover:bg-maroon-850 text-gold-200 border-gold-500/20"
                   }`}
                 >
                   <div className="flex items-center gap-2 truncate">
-                    <Icon className={`w-3.5 h-3.5 flex-shrink-0 ${item.iconColor || "text-gold-400"}`} />
+                    <Icon className="w-3.5 h-3.5 flex-shrink-0 text-gold-400" />
                     <span className="truncate">{item.title}</span>
                   </div>
                   <ChevronRight className="w-3.5 h-3.5 text-gold-400 flex-shrink-0" />

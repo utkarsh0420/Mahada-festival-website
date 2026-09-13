@@ -19,7 +19,7 @@ router.get("/", async (req, res) => {
   }
 });
 
-// Admin updates Tab Approvals / Visibility
+// Admin updates Tab Approvals / Screen Visibility
 router.put("/tabs", protectAdmin, async (req, res) => {
   try {
     const { tabs } = req.body;
@@ -82,6 +82,192 @@ router.put("/general", protectAdmin, async (req, res) => {
   } catch (error) {
     console.error("[Config] Error updating general settings:", error.message);
     res.status(500).json({ success: false, message: "Failed to update general configuration" });
+  }
+});
+
+// Admin updates Daily Newsletter
+router.put("/newsletter", protectAdmin, async (req, res) => {
+  try {
+    const { newsletter } = req.body;
+    let config = await TabConfig.findOne();
+    if (!config) {
+      config = new TabConfig();
+    }
+
+    if (newsletter) {
+      config.newsletter = { ...config.newsletter.toObject(), ...newsletter };
+    }
+    config.updatedAt = Date.now();
+    await config.save();
+
+    res.json({
+      success: true,
+      message: "Daily newsletter updated successfully",
+      newsletter: config.newsletter
+    });
+  } catch (error) {
+    console.error("[Config] Error updating newsletter:", error.message);
+    res.status(500).json({ success: false, message: "Failed to update daily newsletter" });
+  }
+});
+
+// Admin updates Participating Wings
+router.put("/wings", protectAdmin, async (req, res) => {
+  try {
+    const { wings } = req.body;
+    let config = await TabConfig.findOne();
+    if (!config) {
+      config = new TabConfig();
+    }
+
+    if (Array.isArray(wings)) {
+      config.wings = wings;
+      config.participatingWings = wings.map(w => w.code);
+    }
+    config.updatedAt = Date.now();
+    await config.save();
+
+    res.json({
+      success: true,
+      message: "Participating wings updated successfully",
+      wings: config.wings
+    });
+  } catch (error) {
+    console.error("[Config] Error updating wings:", error.message);
+    res.status(500).json({ success: false, message: "Failed to update participating wings" });
+  }
+});
+
+// Admin updates Society Rules
+router.put("/rules", protectAdmin, async (req, res) => {
+  try {
+    const { rules } = req.body;
+    let config = await TabConfig.findOne();
+    if (!config) {
+      config = new TabConfig();
+    }
+
+    if (Array.isArray(rules)) {
+      config.rules = rules;
+    }
+    config.updatedAt = Date.now();
+    await config.save();
+
+    res.json({
+      success: true,
+      message: "Mandal rules updated successfully",
+      rules: config.rules
+    });
+  } catch (error) {
+    console.error("[Config] Error updating rules:", error.message);
+    res.status(500).json({ success: false, message: "Failed to update mandal rules" });
+  }
+});
+
+// Admin updates Photo Gallery
+router.put("/gallery", protectAdmin, async (req, res) => {
+  try {
+    const { gallery } = req.body;
+    let config = await TabConfig.findOne();
+    if (!config) {
+      config = new TabConfig();
+    }
+
+    if (Array.isArray(gallery)) {
+      config.gallery = gallery;
+    }
+    config.updatedAt = Date.now();
+    await config.save();
+
+    res.json({
+      success: true,
+      message: "Gallery updated successfully",
+      gallery: config.gallery
+    });
+  } catch (error) {
+    console.error("[Config] Error updating gallery:", error.message);
+    res.status(500).json({ success: false, message: "Failed to update photo gallery" });
+  }
+});
+
+// Admin updates Poll
+router.put("/poll", protectAdmin, async (req, res) => {
+  try {
+    const { poll } = req.body;
+    let config = await TabConfig.findOne();
+    if (!config) {
+      config = new TabConfig();
+    }
+
+    if (poll) {
+      config.poll = { ...config.poll.toObject(), ...poll };
+    }
+    config.updatedAt = Date.now();
+    await config.save();
+
+    res.json({
+      success: true,
+      message: "Poll updated successfully",
+      poll: config.poll
+    });
+  } catch (error) {
+    console.error("[Config] Error updating poll:", error.message);
+    res.status(500).json({ success: false, message: "Failed to update resident poll" });
+  }
+});
+
+// Public Cast Vote in Poll
+router.post("/poll/vote", async (req, res) => {
+  try {
+    const { optionId } = req.body;
+    let config = await TabConfig.findOne();
+    if (!config || !config.poll || !config.poll.options) {
+      return res.status(404).json({ success: false, message: "Active poll not found" });
+    }
+
+    const opt = config.poll.options.find(o => o.id === Number(optionId));
+    if (!opt) {
+      return res.status(400).json({ success: false, message: "Invalid option selected" });
+    }
+
+    opt.votes = (opt.votes || 0) + 1;
+    config.markModified("poll");
+    await config.save();
+
+    res.json({
+      success: true,
+      message: "Vote recorded successfully",
+      poll: config.poll
+    });
+  } catch (error) {
+    console.error("[Config] Error recording vote:", error.message);
+    res.status(500).json({ success: false, message: "Failed to record vote" });
+  }
+});
+
+// Admin updates Volunteer Seva
+router.put("/volunteer", protectAdmin, async (req, res) => {
+  try {
+    const { volunteerSeva } = req.body;
+    let config = await TabConfig.findOne();
+    if (!config) {
+      config = new TabConfig();
+    }
+
+    if (volunteerSeva) {
+      config.volunteerSeva = { ...config.volunteerSeva.toObject(), ...volunteerSeva };
+    }
+    config.updatedAt = Date.now();
+    await config.save();
+
+    res.json({
+      success: true,
+      message: "Volunteer seva settings updated successfully",
+      volunteerSeva: config.volunteerSeva
+    });
+  } catch (error) {
+    console.error("[Config] Error updating volunteer settings:", error.message);
+    res.status(500).json({ success: false, message: "Failed to update volunteer settings" });
   }
 });
 

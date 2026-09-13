@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 import { 
   X, LayoutDashboard, Sparkles, Bell, Calendar, Flame,
   BarChart2, Users, Building2, ShieldCheck, Info, Image, 
-  PhoneCall, Shield, LogIn, RefreshCw, ChevronRight, CheckCircle2
+  PhoneCall, Shield, LogIn
 } from "lucide-react";
 import { useConfig } from "../context/ConfigContext";
 import { useAuth } from "../context/AuthContext";
@@ -31,13 +31,11 @@ const Sidebar = ({
   activeItem = "dashboard",
   onSelectAction,
   onOpenAdminLogin,
-  onOpenAdminDashboard,
-  announcementCount = 6,
-  eventCount = 10
+  onOpenAdminDashboard
 }) => {
   const { config } = useConfig();
   const { admin } = useAuth();
-  const { language, t } = useLanguage();
+  const { language } = useLanguage();
 
   // Close on Escape key press
   useEffect(() => {
@@ -64,20 +62,21 @@ const Sidebar = ({
 
   if (!isOpen) return null;
 
-  const sidebarItems = [
-    { id: "dashboard", labelMr: "मुख्य पृष्ठ", labelEn: "Home Dashboard", badge: "", badgeType: "active", enabled: true, order: 1, targetSection: "top", icon: "LayoutDashboard" },
-    { id: "liveUpdates", labelMr: "दैनिक वृत्तपत्र", labelEn: "Daily Bulletin", badge: "LIVE", badgeType: "pill-red", enabled: true, order: 2, targetSection: "marquee", icon: "Sparkles" },
-    { id: "aartiSchedule", labelMr: "दैनिक महाआरती", labelEn: "Daily Maha Aarti", badge: "आरती", badgeType: "badge-gold", enabled: true, order: 3, targetSection: "aarti", icon: "Flame" },
-    { id: "schedule", labelMr: "१० दिवसांचे वेळापत्रक", labelEn: "10-Day Schedule", badge: "१० दिवस", badgeType: "badge-gold", enabled: true, order: 4, targetSection: "schedule", icon: "Calendar" },
-    { id: "upcoming", labelMr: "आगामी कार्यक्रम", labelEn: "Upcoming Events", badge: "नवीन", badgeType: "badge-gold", enabled: true, order: 5, targetSection: "upcoming", icon: "Sparkles" },
-    { id: "wings", labelMr: "इमारती (४ विंग्ज)", labelEn: "4 Buildings Info", badge: "", badgeType: "default", enabled: true, order: 6, targetSection: "wings", icon: "Building2" },
-    { id: "polls", labelMr: "मतदान कट्टा", labelEn: "Resident Polls", badge: "", badgeType: "default", enabled: true, order: 7, targetSection: "polls", icon: "BarChart2" },
-    { id: "volunteer", labelMr: "स्वयंसेवक सेवा", labelEn: "Volunteer Seva", badge: "", badgeType: "default", enabled: true, order: 8, targetSection: "volunteer", icon: "Users" },
-    { id: "gallery", labelMr: "छायाचित्रे", labelEn: "Photo Gallery", badge: "", badgeType: "default", enabled: true, order: 9, targetSection: "gallery", icon: "Image" },
-    { id: "contacts", labelMr: "संपर्क व ईमेल", labelEn: "Helplines & Email", badge: "", badgeType: "default", enabled: true, order: 10, targetSection: "contacts", icon: "PhoneCall" },
-    { id: "mandalInfo", labelMr: "मंडळ माहिती व सुरक्षा", labelEn: "About Mandal & Security", badge: "", badgeType: "default", enabled: true, order: 11, targetSection: "mandal-info", icon: "Info" },
-    { id: "adminLogin", labelMr: "व्यवस्थापक कक्ष", labelEn: "Admin Portal", badge: "", badgeType: "default", enabled: true, order: 12, targetSection: "admin-login", icon: "Shield" }
-  ];
+  // Filter sidebar items dynamically based on enabled flags and tab approvals
+  const rawItems = config?.sidebarMenu || [];
+  const sidebarItems = rawItems.filter((item) => {
+    if (item.enabled === false) return false;
+    if (item.id === "aartiSchedule" && config?.tabs?.aarti?.enabled === false) return false;
+    if (item.id === "schedule" && config?.tabs?.schedule?.enabled === false) return false;
+    if (item.id === "upcoming" && config?.tabs?.cultural?.enabled === false && config?.tabs?.upcoming?.enabled === false) return false;
+    if (item.id === "wings" && config?.tabs?.wings?.enabled === false) return false;
+    if (item.id === "polls" && config?.tabs?.polls?.enabled === false) return false;
+    if (item.id === "volunteer" && config?.tabs?.volunteer?.enabled === false) return false;
+    if (item.id === "gallery" && config?.tabs?.gallery?.enabled === false) return false;
+    if (item.id === "contacts" && config?.tabs?.contacts?.enabled === false) return false;
+    if (item.id === "mandalInfo" && config?.tabs?.mandalInfo?.enabled === false) return false;
+    return true;
+  });
 
   const handleItemClick = (item) => {
     onClose();
@@ -94,28 +93,38 @@ const Sidebar = ({
     }
   };
 
+  const settings = config?.sidebarSettings || {};
+  const wingsCodes = config?.wings && config.wings.length > 0 
+    ? config.wings.map(w => w.nameMr || `${w.code} विंग`).join(" • ")
+    : (config?.participatingWings || ["G", "H", "J", "K"]).map(w => `${w} विंग`).join(" • ");
+
   return (
     <div className="fixed inset-0 z-50 flex">
       {/* Dark semi-transparent backdrop */}
       <div
-        className="fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity duration-300 animate-fadeIn"
         onClick={onClose}
-        aria-hidden="true"
+        className="fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity animate-fadeIn"
       />
 
-      {/* Off-canvas sidebar drawer */}
-      <aside
-        className="relative w-full max-w-[320px] sm:max-w-[340px] bg-[#FAF8F5] text-[#2C1810] h-full shadow-2xl flex flex-col z-10 overflow-hidden transform transition-transform duration-300 ease-out border-r border-[#E8DFC8]"
-        aria-label="Festival Sidebar Navigation"
-      >
-        {/* Header with Title and Close X */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-[#E8DFC8] bg-white">
-          <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-gold-600 animate-ping" />
-            <h2 className="font-heading font-extrabold text-base tracking-wide text-maroon-950 uppercase">
-              {language === "mr" ? "उत्सव मेनू" : "Festival Menu"}
-            </h2>
+      {/* Sidebar Drawer Panel */}
+      <aside className="relative z-10 w-72 sm:w-80 max-w-[85vw] h-full bg-[#FAF5EB] border-r-2 border-gold-400 shadow-2xl flex flex-col justify-between animate-slideRight">
+        
+        {/* Drawer Top Header */}
+        <div className="p-4 border-b border-[#E8DFC8] bg-white flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-full bg-maroon-850 border border-gold-400 flex items-center justify-center text-gold-300 font-black text-sm shadow-sm">
+              ॐ
+            </div>
+            <div>
+              <h2 className="font-heading font-black text-xs sm:text-sm text-[#2C1810] leading-tight">
+                {language === "mr" ? (config?.mandalNameMr || "म्हाडा टॉवर्स उत्सव मंडळ") : (config?.mandalNameEn || "MHADA Towers Mandal")}
+              </h2>
+              <p className="text-[10px] text-maroon-800 font-bold uppercase tracking-wider">
+                {language === "mr" ? "अधिकृत सूची" : "Navigation"}
+              </p>
+            </div>
           </div>
+
           <button
             onClick={onClose}
             className="p-1.5 rounded-full text-[#7A6B5D] hover:text-[#2C1810] hover:bg-[#F3EFE6] transition-colors"
@@ -165,20 +174,20 @@ const Sidebar = ({
           })}
         </div>
 
-        {/* Bottom Card for 4 Participating Buildings */}
+        {/* Bottom Card for Participating Buildings */}
         <div className="p-4 border-t border-[#E8DFC8] bg-white">
           <div className="p-3.5 rounded-2xl bg-gradient-to-br from-[#FFFDF9] to-[#FAF5EC] border border-gold-300 shadow-xs">
             <div className="flex items-center gap-2 mb-1">
               <Building2 className="w-4 h-4 text-maroon-800 flex-shrink-0" />
               <span className="font-heading font-extrabold text-xs text-maroon-950">
-                {language === "mr" ? "सहभागी ४ इमारती" : "4 Participating Buildings"}
+                {language === "mr" ? (settings.bottomCardTitle || "सहभागी इमारती") : (settings.bottomCardSubtitle || "Participating Buildings")}
               </span>
             </div>
-            <p className="text-[11px] font-bold text-maroon-900 mt-1">
-              G (नंदादेवी) • H (निलगिरी) • J (पूर्वांचल) • K (गोवर्धन)
+            <p className="text-[11px] font-bold text-maroon-900 mt-1 truncate">
+              {wingsCodes}
             </p>
             <p className="text-[10px] text-gray-600 mt-0.5">
-              ॥ ४ विंग्स, एकच परिवार - सहकार्य • शिस्त • अखंड भक्ती ॥
+              {settings.bottomCardTagline || "॥ ४ विंग्स, एकच परिवार - सहकार्य • शिस्त • अखंड भक्ती ॥"}
             </p>
           </div>
         </div>
