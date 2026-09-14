@@ -30,6 +30,7 @@ router.put("/tabs", protectAdmin, async (req, res) => {
 
     if (tabs) {
       config.tabs = { ...config.tabs.toObject(), ...tabs };
+      config.markModified("tabs");
     }
     config.updatedAt = Date.now();
     await config.save();
@@ -95,7 +96,8 @@ router.put("/newsletter", protectAdmin, async (req, res) => {
     }
 
     if (newsletter) {
-      config.newsletter = { ...config.newsletter.toObject(), ...newsletter };
+      config.newsletter = { ...(config.newsletter?.toObject ? config.newsletter.toObject() : config.newsletter), ...newsletter };
+      config.markModified("newsletter");
     }
     config.updatedAt = Date.now();
     await config.save();
@@ -123,6 +125,8 @@ router.put("/wings", protectAdmin, async (req, res) => {
     if (Array.isArray(wings)) {
       config.wings = wings;
       config.participatingWings = wings.map(w => w.code);
+      config.markModified("wings");
+      config.markModified("participatingWings");
     }
     config.updatedAt = Date.now();
     await config.save();
@@ -149,6 +153,7 @@ router.put("/rules", protectAdmin, async (req, res) => {
 
     if (Array.isArray(rules)) {
       config.rules = rules;
+      config.markModified("rules");
     }
     config.updatedAt = Date.now();
     await config.save();
@@ -175,6 +180,7 @@ router.put("/gallery", protectAdmin, async (req, res) => {
 
     if (Array.isArray(gallery)) {
       config.gallery = gallery;
+      config.markModified("gallery");
     }
     config.updatedAt = Date.now();
     await config.save();
@@ -200,7 +206,8 @@ router.put("/poll", protectAdmin, async (req, res) => {
     }
 
     if (poll) {
-      config.poll = { ...config.poll.toObject(), ...poll };
+      config.poll = { ...(config.poll?.toObject ? config.poll.toObject() : config.poll), ...poll };
+      config.markModified("poll");
     }
     config.updatedAt = Date.now();
     await config.save();
@@ -255,7 +262,8 @@ router.put("/volunteer", protectAdmin, async (req, res) => {
     }
 
     if (volunteerSeva) {
-      config.volunteerSeva = { ...config.volunteerSeva.toObject(), ...volunteerSeva };
+      config.volunteerSeva = { ...(config.volunteerSeva?.toObject ? config.volunteerSeva.toObject() : config.volunteerSeva), ...volunteerSeva };
+      config.markModified("volunteerSeva");
     }
     config.updatedAt = Date.now();
     await config.save();
@@ -282,9 +290,11 @@ router.put("/sidebar", protectAdmin, async (req, res) => {
 
     if (sidebarMenu) {
       config.sidebarMenu = sidebarMenu;
+      config.markModified("sidebarMenu");
     }
     if (sidebarSettings) {
-      config.sidebarSettings = { ...config.sidebarSettings.toObject(), ...sidebarSettings };
+      config.sidebarSettings = { ...(config.sidebarSettings?.toObject ? config.sidebarSettings.toObject() : config.sidebarSettings), ...sidebarSettings };
+      config.markModified("sidebarSettings");
     }
     config.updatedAt = Date.now();
     await config.save();
@@ -312,6 +322,7 @@ router.put("/aarti-schedule", protectAdmin, async (req, res) => {
 
     if (dailyAartiSchedule && Array.isArray(dailyAartiSchedule)) {
       config.dailyAartiSchedule = dailyAartiSchedule;
+      config.markModified("dailyAartiSchedule");
     }
     config.updatedAt = Date.now();
     await config.save();
@@ -337,7 +348,8 @@ router.put("/mandal-info", protectAdmin, async (req, res) => {
     }
 
     if (mandalInfo) {
-      config.mandalInfo = { ...config.mandalInfo.toObject(), ...mandalInfo };
+      config.mandalInfo = { ...(config.mandalInfo?.toObject ? config.mandalInfo.toObject() : config.mandalInfo), ...mandalInfo };
+      config.markModified("mandalInfo");
     }
     config.updatedAt = Date.now();
     await config.save();

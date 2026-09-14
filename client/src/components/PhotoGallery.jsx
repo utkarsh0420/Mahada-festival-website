@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { 
-  Image as ImageIcon, Sparkles, X, Share2, 
+  Image as ImageIcon, Sparkles, X, 
   Eye, Calendar, ZoomIn 
 } from "lucide-react";
 import { useLanguage } from "../context/LanguageContext";
@@ -8,7 +8,7 @@ import { useConfig } from "../context/ConfigContext";
 
 export const PAST_PHOTOS_DATA = [];
 
-const PhotoGallery = ({ onShareWhatsApp }) => {
+const PhotoGallery = () => {
   const { language, t } = useLanguage();
   const { config } = useConfig();
   const [selectedCategory, setSelectedCategory] = useState("all");
@@ -36,17 +36,6 @@ const PhotoGallery = ({ onShareWhatsApp }) => {
   const filteredPhotos = selectedCategory === "all"
     ? galleryList
     : galleryList.filter((p) => p.category === selectedCategory);
-
-  const handleSharePhoto = (photo) => {
-    if (onShareWhatsApp) {
-      onShareWhatsApp({
-        titleMr: `📸 उत्सव छायाचित्र - ${photo.titleMr || photo.titleEn}`,
-        time: `वर्ष ${photo.year || config.festivalYear}`,
-        venue: config.mandalNameMr || "म्हाडा टॉवर्स, पिंपरी वाघेरे",
-        descriptionMr: `${photo.descMr || photo.descEn || ""}\nगणपती बाप्पा मोरया, मंगलमूर्ती मोरया!`
-      });
-    }
-  };
 
   return (
     <section id="gallery" className="scroll-mt-20 my-8">
@@ -107,7 +96,7 @@ const PhotoGallery = ({ onShareWhatsApp }) => {
                       className="w-full h-full object-cover group-hover:scale-105 transition duration-500" 
                     />
                     <div className="absolute top-3 left-3 bg-black/50 backdrop-blur-xs text-gold-300 border border-gold-400/40 text-[10px] font-bold px-2 py-0.5 rounded-full">
-                      वर्ष {photo.year || config.festivalYear}
+                      {language === "mr" ? `वर्ष ${photo.year || config.festivalYear}` : `Year ${photo.year || config.festivalYear}`}
                     </div>
                     {photo.category && (
                       <div className="absolute top-3 right-3 bg-gold-400 text-maroon-950 text-[10px] font-black px-2 py-0.5 rounded-full shadow">
@@ -128,7 +117,7 @@ const PhotoGallery = ({ onShareWhatsApp }) => {
                     </h4>
 
                     <div className="absolute top-3 left-3 bg-black/40 backdrop-blur-xs text-gold-300 border border-gold-400/40 text-[10px] font-bold px-2 py-0.5 rounded-full">
-                      वर्ष {photo.year || config.festivalYear}
+                      {language === "mr" ? `वर्ष ${photo.year || config.festivalYear}` : `Year ${photo.year || config.festivalYear}`}
                     </div>
 
                     {photo.category && (
@@ -139,7 +128,7 @@ const PhotoGallery = ({ onShareWhatsApp }) => {
 
                     <div className="absolute bottom-3 right-3 flex items-center gap-1 bg-black/50 backdrop-blur-xs text-white text-[11px] font-medium px-2 py-1 rounded-lg opacity-0 group-hover:opacity-100 transition duration-200">
                       <ZoomIn className="w-3.5 h-3.5 text-gold-300" />
-                      <span>पहा</span>
+                      <span>{language === "mr" ? "पहा" : "View"}</span>
                     </div>
                   </div>
                 )}
@@ -153,10 +142,10 @@ const PhotoGallery = ({ onShareWhatsApp }) => {
                   <div className="mt-3 pt-2.5 border-t border-gold-200 flex items-center justify-between text-xs text-maroon-800 font-semibold">
                     <span className="flex items-center gap-1">
                       <Calendar className="w-3.5 h-3.5 text-amber-600" />
-                      <span>वर्ष {photo.year || config.festivalYear}</span>
+                      <span>{language === "mr" ? `वर्ष ${photo.year || config.festivalYear}` : `Year ${photo.year || config.festivalYear}`}</span>
                     </span>
                     <span className="text-gold-700 font-bold group-hover:text-maroon-900 transition flex items-center gap-1">
-                      <span>विस्तारित पहा</span>
+                      <span>{language === "mr" ? "विस्तारित पहा" : "View Details"}</span>
                       <Eye className="w-3.5 h-3.5" />
                     </span>
                   </div>
@@ -188,7 +177,7 @@ const PhotoGallery = ({ onShareWhatsApp }) => {
                   </span>
                 )}
                 <span className="text-xs text-gold-300 font-bold">
-                  वर्ष {activePhoto.year || config.festivalYear}
+                  {language === "mr" ? `वर्ष ${activePhoto.year || config.festivalYear}` : `Year ${activePhoto.year || config.festivalYear}`}
                 </span>
               </div>
               <button
@@ -211,7 +200,9 @@ const PhotoGallery = ({ onShareWhatsApp }) => {
                   {language === "mr" ? activePhoto.titleMr : (activePhoto.titleEn || activePhoto.titleMr)}
                 </h3>
                 <p className="text-xs text-gold-200 mt-2 font-medium">
-                  {config.mandalNameMr || "म्हाडा टॉवर्स गणेशोत्सव संकुल, पिंपरी वाघेरे"}
+                  {language === "mr" 
+                    ? (config.mandalNameMr || "म्हाडा टॉवर्स गणेशोत्सव संकुल, पिंपरी वाघेरे") 
+                    : (config.mandalNameEn || "MHADA Towers Ganesh Utsav Complex, Pimpri Waghere")}
                 </p>
               </div>
             )}
@@ -222,18 +213,10 @@ const PhotoGallery = ({ onShareWhatsApp }) => {
                 {language === "mr" ? activePhoto.descMr : (activePhoto.descEn || activePhoto.descMr)}
               </p>
 
-              <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-3 border-t border-gold-200">
-                <button
-                  onClick={() => handleSharePhoto(activePhoto)}
-                  className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl shadow transition"
-                >
-                  <Share2 className="w-4 h-4" />
-                  <span>व्हॉट्सॲपवर शेअर करा</span>
-                </button>
-
+              <div className="flex items-center justify-end gap-3 pt-3 border-t border-gold-200">
                 <button
                   onClick={() => setActivePhoto(null)}
-                  className="w-full sm:w-auto px-4 py-2 bg-maroon-850 hover:bg-maroon-800 text-gold-200 font-bold text-xs rounded-xl transition"
+                  className="w-full sm:w-auto px-5 py-2 bg-maroon-850 hover:bg-maroon-800 text-gold-200 font-bold text-xs rounded-xl transition"
                 >
                   {t("close")}
                 </button>

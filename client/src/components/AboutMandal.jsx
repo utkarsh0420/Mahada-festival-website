@@ -1,7 +1,7 @@
 import React from "react";
 import { 
   Building2, ShieldCheck, HeartHandshake, Leaf, Award, 
-  PhoneCall, Mail, MapPin, Sparkles, Share2, Shield, Users 
+  PhoneCall, Mail, MapPin, Sparkles, Shield, Users 
 } from "lucide-react";
 import { useConfig } from "../context/ConfigContext";
 import { useLanguage } from "../context/LanguageContext";
@@ -15,7 +15,7 @@ const ICON_MAP = {
   Building2
 };
 
-const AboutMandal = ({ onShareWhatsApp }) => {
+const AboutMandal = () => {
   const { config } = useConfig();
   const { language, t } = useLanguage();
 
@@ -28,22 +28,13 @@ const AboutMandal = ({ onShareWhatsApp }) => {
   const mandalName = language === "mr" ? (config?.mandalNameMr || "म्हाडा टॉवर्स उत्सव मंडळ") : (config?.mandalNameEn || "MHADA Towers Utsav Mandal");
   const helpline = info.helpline || config?.emergencyHelpline || "+91 98220 11223";
   const email = info.email || config?.email || "mhadatowersutsavmandal@gmail.com";
-  const address = info.officeAddressMr || config?.addressMr || "पिंपरी वाघेरे, पिंपरी चिंचवड, पुणे - ४११०१७";
+  const address = language === "mr" 
+    ? (info.officeAddressMr || config?.addressMr || "पिंपरी वाघेरे, पिंपरी चिंचवड, पुणे - ४११०१७")
+    : (info.officeAddressEn || config?.addressEn || "Pimpri Waghere, Pimpri Chinchwad, Pune - 411017");
   const motto = language === "mr" ? (info.mottoMr || "॥ ४ विंग्स, एकच परिवार - सहकार्य • शिस्त • अखंड भक्ती ॥") : (info.mottoEn || info.mottoMr || "4 Wings, One Family");
   const historyText = language === "mr" ? (info.historyMr || "") : (info.historyEn || info.historyMr || "");
   const pillarsList = info.pillars || [];
   const committeeList = info.committeeMembers || [];
-
-  const handleShareMandal = () => {
-    if (onShareWhatsApp) {
-      onShareWhatsApp({
-        titleMr: `${mandalName} - अधिकृत माहिती`,
-        time: `वर्ष ${config?.festivalYear || "२०२६"}`,
-        venue: address,
-        descriptionMr: `नोंदणी क्र: ${info.regDetails || config?.regNo || "१२४३/२०२५"}\nध्येय: ${motto}\nसोसायटी ईमेल: ${email}\nसंपर्क: ${helpline}`
-      });
-    }
-  };
 
   return (
     <section id="mandal-info" className="scroll-mt-20 my-10">
@@ -72,8 +63,10 @@ const AboutMandal = ({ onShareWhatsApp }) => {
           </p>
 
           <p className="text-xs sm:text-sm text-gray-700 mt-2 font-medium">
-            {info.regDetails || (config?.regNo ? `नोंदणी क्र: ${config.regNo} - पुणे (धर्मादाय सहआयुक्त मान्यताप्राप्त)` : "")} 
-            {info.establishedYear ? ` • स्थापना: ${info.establishedYear}` : ""}
+            {info.regDetails || (config?.regNo 
+              ? (language === "mr" ? `नोंदणी क्र: ${config.regNo} - पुणे (धर्मादाय सहआयुक्त मान्यताप्राप्त)` : `Reg No: ${config.regNo} - Pune (Charity Commissioner Recognized)`) 
+              : "")} 
+            {info.establishedYear ? (language === "mr" ? ` • स्थापना: ${info.establishedYear}` : ` • Estd: ${info.establishedYear}`) : ""}
           </p>
         </div>
 
@@ -116,18 +109,10 @@ const AboutMandal = ({ onShareWhatsApp }) => {
               {config?.participatingWings && config.participatingWings.length > 0 && (
                 <div className="flex items-center gap-2 text-gold-200">
                   <Building2 className="w-3.5 h-3.5 text-gold-400 flex-shrink-0" />
-                  <span>विंग्स: {config.participatingWings.join(", ")}</span>
+                  <span>{language === "mr" ? "विंग्स:" : "Wings:"} {config.participatingWings.join(", ")}</span>
                 </div>
               )}
             </div>
-
-            <button
-              onClick={handleShareMandal}
-              className="mt-4 w-full py-2 bg-gold-400 hover:bg-gold-300 text-maroon-950 font-black rounded-xl text-xs flex items-center justify-center gap-1.5 shadow transition transform active:scale-95"
-            >
-              <Share2 className="w-3.5 h-3.5" />
-              <span>{language === "mr" ? "मंडळ माहिती शेअर करा" : "Share Mandal Profile"}</span>
-            </button>
           </div>
 
           {/* Right: Narrative Story */}

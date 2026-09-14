@@ -1,13 +1,13 @@
 import React, { useState } from "react";
 import { 
-  Calendar, Clock, Building, Sparkles, Share2
+  Calendar, Clock, Building, Sparkles 
 } from "lucide-react";
 import { useLanguage } from "../context/LanguageContext";
 import { useConfig } from "../context/ConfigContext";
 
 export const TEN_DAYS_DATA = [];
 
-const TenDaysSchedule = ({ onShareWhatsApp }) => {
+const TenDaysSchedule = () => {
   const { language, t } = useLanguage();
   const { config } = useConfig();
 
@@ -17,7 +17,20 @@ const TenDaysSchedule = ({ onShareWhatsApp }) => {
   }
 
   const schedule = config?.dailyAartiSchedule || [];
-  const [selectedDayNum, setSelectedDayNum] = useState(1);
+  const [selectedDayNum, setSelectedDayNum] = useState(() => {
+    const cur = (config?.dailyAartiSchedule || []).find((d) => d.isCurrentDay);
+    return cur ? (cur.dayNumber || cur.day || 1) : 1;
+  });
+
+  // Sync with current day when admin changes schedule in live sync
+  React.useEffect(() => {
+    if (schedule && schedule.length > 0) {
+      const cur = schedule.find((d) => d.isCurrentDay);
+      if (cur) {
+        setSelectedDayNum(cur.dayNumber || cur.day || 1);
+      }
+    }
+  }, [config?.dailyAartiSchedule]);
 
   if (schedule.length === 0) {
     return null;
@@ -33,17 +46,6 @@ const TenDaysSchedule = ({ onShareWhatsApp }) => {
   const eveningTime = language === "mr" ? activeItem.eveningTime : (activeItem.eveningTimeEn || activeItem.eveningTime);
   const ritualText = language === "mr" ? (activeItem.ritual || activeItem.morningRitual) : (activeItem.ritualEn || activeItem.morningRitualEn || activeItem.ritual || activeItem.morningRitual);
   const culturalText = language === "mr" ? (activeItem.cultural || activeItem.eveningRitual) : (activeItem.culturalEn || activeItem.eveningRitualEn || activeItem.cultural || activeItem.eveningRitual);
-
-  const handleShareDay = (item) => {
-    if (onShareWhatsApp && item) {
-      onShareWhatsApp({
-        titleMr: `📅 १० दिवस वेळापत्रक - दिवस ${day}`,
-        time: `${dateText} | सकाळ आरती: ${morningTime} | संध्या आरती: ${eveningTime}`,
-        venue: config.mandalNameMr || "मुख्य उत्सव मंडप, म्हाडा टॉवर्स",
-        descriptionMr: `तिथी: ${tithiText}\nयजमान इमारत: ${hostWingText}\nप्रमुख: ${hostLeadText || ""}\nविधी: ${ritualText || ""}\nसांस्कृतिक कार्यक्रम: ${culturalText || ""}\nसर्व भाविकांनी उपस्थित राहावे!`
-      });
-    }
-  };
 
   return (
     <section id="schedule" className="scroll-mt-20 my-8">
@@ -63,14 +65,6 @@ const TenDaysSchedule = ({ onShareWhatsApp }) => {
               {t("scheduleSubtitle")}
             </p>
           </div>
-
-          <button
-            onClick={() => handleShareDay(activeItem)}
-            className="self-start md:self-center inline-flex items-center gap-2 px-4 py-2 bg-emerald-700 hover:bg-emerald-600 text-white font-bold text-xs sm:text-sm rounded-xl shadow-md transition"
-          >
-            <Share2 className="w-4 h-4" />
-            <span>{language === "mr" ? "वेळापत्रक शेअर करा" : "Share Day Schedule"}</span>
-          </button>
         </div>
 
         {/* Horizontal 10 Days Tab Scroller */}
@@ -93,8 +87,13 @@ const TenDaysSchedule = ({ onShareWhatsApp }) => {
                   {t("day")} {currentDayNum}
                 </span>
                 <span className="block font-extrabold whitespace-nowrap">
-                  {dateStr.split(" ")[0] || `दिवस ${currentDayNum}`} {dateStr.split(" ")[1] || ""}
+                  {dateStr.split(" ")[0] || (language === "mr" ? `दिवस ${currentDayNum}` : `Day ${currentDayNum}`)} {dateStr.split(" ")[1] || ""}
                 </span>
+                {item.isCurrentDay && (
+                  <span className="inline-block mt-0.5 text-[9px] bg-red-600 text-white px-1.5 py-0.2 rounded-full font-bold">
+                    {language === "mr" ? "आज" : "Today"}
+                  </span>
+                )}
               </button>
             );
           })}
@@ -154,7 +153,7 @@ const TenDaysSchedule = ({ onShareWhatsApp }) => {
                 <span>{t("hostRepresentative")}</span>
               </h4>
               <p className="text-xs sm:text-sm font-bold text-maroon-950 pt-1">
-                {hostLeadText || "सोसायटी समिती"}
+                {hostLeadText || (language === "mr" ? "सोसायटी समिती" : "Society Committee")}
               </p>
               <p className="text-[11px] text-gray-600">
                 {language === "mr" 

@@ -9,6 +9,7 @@ import {
   FestiveButton, FestiveBadge 
 } from "./FestiveControls";
 import { useLanguage } from "../../context/LanguageContext";
+import { triggerLiveSync } from "../../utils/liveSync";
 
 const WING_OPTIONS_MR = [
   { value: "सर्व विंग्ज (All Buildings)", label: "सर्व ४ इमारती (All Buildings)" },
@@ -110,6 +111,7 @@ const ContactManager = ({ contacts, onRefresh, onNotify }) => {
           onNotify(isEn ? "Contact updated successfully!" : "संपर्क यशस्वीरीत्या अद्ययावत केला!", "success");
           handleCancelEdit();
           onRefresh();
+          triggerLiveSync("contacts");
         }
       } else {
         const res = await API.post("/contacts", payload);
@@ -126,6 +128,7 @@ const ContactManager = ({ contacts, onRefresh, onNotify }) => {
             type: "wing_lead"
           });
           onRefresh();
+          triggerLiveSync("contacts");
         }
       }
     } catch (err) {
@@ -142,6 +145,7 @@ const ContactManager = ({ contacts, onRefresh, onNotify }) => {
         onNotify(isEn ? "Contact removed" : "संपर्क काढला गेला", "success");
         if (editingId === id) handleCancelEdit();
         onRefresh();
+        triggerLiveSync("contacts");
       }
     } catch (err) {
       onNotify(isEn ? "Failed to delete contact" : "हटवताना त्रुटी आली", "error");

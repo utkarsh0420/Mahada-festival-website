@@ -1,7 +1,7 @@
 import React, { useRef, useState } from "react";
 import { 
   ChevronLeft, ChevronRight, Clock, Calendar, MapPin, 
-  Sparkles, Share2, Flame, Bell, Music, Building 
+  Sparkles, Flame, Bell, Music, Building 
 } from "lucide-react";
 import { useLanguage } from "../context/LanguageContext";
 
@@ -11,28 +11,53 @@ const CATEGORY_META = {
     color: "bg-amber-700 text-white",
     border: "border-amber-500",
     badge: "श्रींचे आगमन (Arrival)",
+    badgeEn: "Arrival",
   },
   aarti: {
     icon: Sparkles,
     color: "bg-maroon-850 text-gold-300",
     border: "border-gold-500",
     badge: "दैनिक महाआरती (Aarti)",
+    badgeEn: "Daily Aarti",
   },
   cultural: {
     icon: Music,
     color: "bg-indigo-900 text-gold-200",
     border: "border-indigo-400",
     badge: "सांस्कृतिक कार्यक्रम (Cultural)",
+    badgeEn: "Cultural Event",
+  },
+  prasad: {
+    icon: Sparkles,
+    color: "bg-emerald-850 text-white",
+    border: "border-emerald-500",
+    badge: "महाप्रसाद (Maha Prasad)",
+    badgeEn: "Mahaprasad",
+  },
+  visarjan: {
+    icon: Flame,
+    color: "bg-red-900 text-gold-200",
+    border: "border-red-500",
+    badge: "विसर्जन (Visarjan)",
+    badgeEn: "Visarjan",
+  },
+  general: {
+    icon: Bell,
+    color: "bg-amber-800 text-gold-100",
+    border: "border-amber-500",
+    badge: "सर्वसाधारण",
+    badgeEn: "General",
   },
   other: {
     icon: Bell,
     color: "bg-maroon-700 text-white",
     border: "border-gold-400",
     badge: "विशेष सूचना",
+    badgeEn: "Notice",
   }
 };
 
-const EventScroller = ({ events, activeCategory, onSelectCategory, onShareWhatsApp }) => {
+const EventScroller = ({ events, activeCategory, onSelectCategory }) => {
   const { language, t } = useLanguage();
   const scrollContainerRef = useRef(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
@@ -54,18 +79,16 @@ const EventScroller = ({ events, activeCategory, onSelectCategory, onShareWhatsA
     }
   };
 
-  // Removed Prasad and Visarjan categories as requested
   const categories = [
     { id: "all", labelMr: "सर्व ठळक घडामोडी", labelEn: "All Highlights" },
     { id: "aarti", labelMr: "🪔 दैनिक महाआरती", labelEn: "🪔 Daily Aarti" },
-    { id: "arrival", labelMr: "🚩 आगमन व प्राणप्रतिष्ठा", labelEn: "🚩 Arrival" },
+    { id: "arrival", labelMr: "🚩 आगमन व प्रतिष्ठा", labelEn: "🚩 Arrival" },
     { id: "cultural", labelMr: "🎭 सांस्कृतिक स्पर्धा", labelEn: "🎭 Cultural" },
+    { id: "prasad", labelMr: "🍬 महाप्रसाद", labelEn: "🍬 Mahaprasad" },
+    { id: "visarjan", labelMr: "🌊 विसर्जन मिरवणूक", labelEn: "🌊 Visarjan" },
   ];
 
-  // Filter out any events that belong to prasad or visarjan if they exist in DB
-  const sanitizedEvents = (events || []).filter(
-    (ev) => ev.category !== "prasad" && ev.category !== "visarjan"
-  );
+  const sanitizedEvents = events || [];
 
   return (
     <section className="w-full py-6 sm:py-8 bg-gradient-to-b from-[#FFFDF9] via-[#FAF5EB] to-[#FFFDF9]">
@@ -151,16 +174,24 @@ const EventScroller = ({ events, activeCategory, onSelectCategory, onShareWhatsA
                   className="flex-shrink-0 w-[290px] sm:w-[330px] rounded-2xl bg-white border-2 border-gold-300/80 p-4 shadow-sm hover:shadow-lg hover:border-gold-500 transition-all flex flex-col justify-between"
                 >
                   <div>
-                    {/* Badge & Date */}
+                    {/* Badge, Live Indicator & Date */}
                     <div className="flex items-center justify-between gap-2 mb-2.5">
-                      <span className={`inline-flex items-center gap-1 text-[11px] font-black px-2.5 py-0.5 rounded-full ${meta.color}`}>
-                        <Icon className="w-3 h-3" />
-                        <span>{language === "mr" ? meta.badge : event.category}</span>
-                      </span>
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className={`inline-flex items-center gap-1 text-[11px] font-black px-2.5 py-0.5 rounded-full ${meta.color}`}>
+                          <Icon className="w-3 h-3" />
+                          <span>{language === "mr" ? meta.badge : (meta.badgeEn || meta.badge)}</span>
+                        </span>
+                        {event.status === "live" && (
+                          <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-600 text-white animate-pulse">
+                            <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping" />
+                            {language === "mr" ? "सुरू आहे" : "LIVE"}
+                          </span>
+                        )}
+                      </div>
 
                       <span className="text-[11px] font-bold text-gray-600 flex items-center gap-1">
                         <Calendar className="w-3 h-3 text-gold-600" />
-                        <span>{event.dateStr}</span>
+                        <span>{language === "mr" ? event.dateStr : (event.dateStrEn || event.dateStr)}</span>
                       </span>
                     </div>
 
@@ -175,27 +206,19 @@ const EventScroller = ({ events, activeCategory, onSelectCategory, onShareWhatsA
                     </p>
                   </div>
 
-                  {/* Footer with Time & WhatsApp */}
+                  {/* Footer with Time */}
                   <div className="pt-2.5 border-t border-gray-100 flex items-center justify-between text-xs">
                     <div className="flex items-center gap-1 text-maroon-900 font-bold">
                       <Clock className="w-3.5 h-3.5 text-amber-600" />
-                      <span>{event.time}</span>
+                      <span>{language === "mr" ? event.time : (event.timeEn || event.time)}</span>
                     </div>
-
-                    <button
-                      onClick={() => onShareWhatsApp(event)}
-                      className="p-1.5 text-emerald-700 hover:text-emerald-800 bg-emerald-50 hover:bg-emerald-100 rounded-lg border border-emerald-200 transition"
-                      title="व्हॉट्सॲपवर पाठवा"
-                    >
-                      <Share2 className="w-3.5 h-3.5" />
-                    </button>
                   </div>
                 </div>
               );
             })
           ) : (
             <div className="w-full text-center py-8 text-xs text-gray-500">
-              या श्रेणीत सध्या कोणतेही कार्यक्रम उपलब्ध नाहीत.
+              {language === "mr" ? "या श्रेणीत सध्या कोणतेही कार्यक्रम उपलब्ध नाहीत." : "No events available in this category currently."}
             </div>
           )}
         </div>

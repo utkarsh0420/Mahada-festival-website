@@ -211,7 +211,7 @@ const EmergencyContacts = ({ contacts = [] }) => {
                 <p className="text-xs text-gold-200/80">
                   {language === "mr" 
                     ? (config?.regNo ? `नोंदणी क्र: ${config.regNo} • कोणत्याही सूचना किंवा मदतीसाठी संपर्क साधा` : "कोणत्याही सूचना किंवा मदतीसाठी संपर्क साधा")
-                    : "Contact us for queries, suggestions or support"}
+                    : (config?.regNo ? `Reg No: ${config.regNo} • Contact us for any queries, suggestions or support` : "Contact us for any queries, suggestions or support")}
                 </p>
               </div>
             </div>
@@ -228,7 +228,7 @@ const EmergencyContacts = ({ contacts = [] }) => {
               <button
                 onClick={handleCopyEmail}
                 className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-maroon-800 hover:bg-maroon-700 text-gold-200 font-bold text-xs sm:text-sm border border-gold-500/40 transition"
-                title="ईमेल पत्ता कॉपी करा"
+                title={language === "mr" ? "ईमेल पत्ता कॉपी करा" : "Copy email address"}
               >
                 {copiedEmail ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
                 <span>{copiedEmail ? t("copied") : t("copyEmail")}</span>
@@ -251,7 +251,7 @@ const EmergencyContacts = ({ contacts = [] }) => {
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-1.5 mb-1.5 flex-wrap">
                       <span className="text-[10px] font-black uppercase tracking-wider text-maroon-800 bg-gold-100 px-2.5 py-0.5 rounded-full border border-gold-200 truncate">
-                        {c.wing || "सर्व विंग्ज"}
+                        {c.wing || (language === "mr" ? "सर्व विंग्ज" : "All Wings")}
                       </span>
                       <span className="text-[10px] font-bold text-amber-900 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200 truncate">
                         {language === "mr" ? c.roleMr : (c.roleEn || c.roleMr)}
@@ -264,8 +264,8 @@ const EmergencyContacts = ({ contacts = [] }) => {
 
                     <p className="text-xs text-stone-600 font-medium truncate mt-0.5">
                       {language === "mr" 
-                        ? (c.roleMr === "अध्यक्षा" ? "मंडळ अध्यक्षा" : c.roleMr === "उपाध्यक्षा" ? "मंडळ उपाध्यक्षा" : c.roleMr === "सचिव" ? "मंडळ सचिव" : c.roleMr === "खजिनदार" ? "मंडळ खजिनदार" : "कार्यकारिणी सदस्य")
-                        : (c.roleEn || c.roleMr)}
+                        ? (c.roleMr === "अध्यक्षा" ? "मंडळ अध्यक्षा" : c.roleMr === "उपाध्यक्षा" ? "मंडळ उपाध्यक्षा" : c.roleMr === "सचिव" ? "मंडळ सचिव" : c.roleMr === "खजिनदार" ? "मंडळ खजिनदार" : (c.roleMr || "कार्यकारिणी सदस्य"))
+                        : (c.roleEn || c.roleMr || "Executive Member")}
                     </p>
 
                     {c.phone && (
@@ -280,7 +280,7 @@ const EmergencyContacts = ({ contacts = [] }) => {
                     <a
                       href={`tel:${c.phone.replace(/[^0-9+]/g, "")}`}
                       className="flex-shrink-0 p-3 rounded-2xl bg-maroon-850 hover:bg-maroon-700 text-gold-300 shadow-md transition flex items-center justify-center transform active:scale-90"
-                      title={`${c.nameMr || c.nameEn} यांना कॉल करा`}
+                      title={language === "mr" ? `${c.nameMr || c.nameEn} यांना कॉल करा` : `Call ${c.nameEn || c.nameMr}`}
                     >
                       <Phone className="w-5 h-5" />
                     </a>

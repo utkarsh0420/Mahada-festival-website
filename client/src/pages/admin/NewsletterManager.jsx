@@ -6,6 +6,7 @@ import {
   FestiveCard, FestiveInput, FestiveTextarea, FestiveButton 
 } from "./FestiveControls";
 import { useLanguage } from "../../context/LanguageContext";
+import { formatNewsletterBroadcast, openWhatsApp } from "../../utils/whatsappFormatter";
 
 const NewsletterManager = ({ config, onSaveNewsletter, onNotify }) => {
   const { language } = useLanguage();
@@ -50,6 +51,31 @@ const NewsletterManager = ({ config, onSaveNewsletter, onNotify }) => {
     }
   }, [config]);
 
+  const handleAutoFillFromSchedule = (dayIdx) => {
+    const schedule = config?.dailyAartiSchedule || config?.tenDaysAartiSchedule || [];
+    const item = schedule[dayIdx];
+    if (!item) return;
+
+    setForm(prev => ({
+      ...prev,
+      edition: `दैनिक डिजिटल उत्सव बुलेटिन (दिवस ${item.dayNumber || (dayIdx + 1)})`,
+      editionEn: `Daily Festival Bulletin (Day ${item.dayNumber || (dayIdx + 1)})`,
+      dateStr: item.dateStr || "",
+      dateStrEn: item.dateStrEn || item.dateStr || "",
+      headline: item.tithi || "दैनिक महापूजा व महाआरती",
+      headlineEn: item.tithiEn || item.tithi || "Daily Mahapooja & Aarti",
+      subheadline: `${item.morningRitual || item.ritual || ""} | ${item.eveningRitual || item.cultural || ""}`.trim(),
+      subheadlineEn: `${item.morningRitualEn || item.morningRitual || ""} | ${item.eveningRitualEn || item.eveningRitual || ""}`.trim(),
+      todaysHostWing: item.hostWing || "",
+      todaysHostWingEn: item.hostWingEn || item.hostWing || "",
+      eveningAartiTime: item.eveningTime || "०८:०० PM",
+      specialNote: item.specialPrasad ? `विशेष महाप्रसाद: ${item.specialPrasad}` : (item.cultural ? `सांस्कृतिक: ${item.cultural}` : "")
+    }));
+    if (onNotify) {
+      onNotify(isEn ? `Loaded details for Day ${item.dayNumber || (dayIdx + 1)}` : `दिवस ${item.dayNumber || (dayIdx + 1)} ची माहिती लोड केली!`, "info");
+    }
+  };
+
   const handleSubmit = async (e) => {
     if (e) e.preventDefault();
     setIsSaving(true);
@@ -77,18 +103,34 @@ const NewsletterManager = ({ config, onSaveNewsletter, onNotify }) => {
       icon={Newspaper}
       badge={isEn ? "Daily Bulletin" : "दैनिक पत्रिका"}
       action={
-        <FestiveButton
-          onClick={handleSubmit}
-          icon={Save}
-          variant="primary"
-          size="md"
-          disabled={isSaving}
-        >
-          {isSaving 
-            ? (isEn ? "Saving..." : "जतन करत आहे...") 
-            : (isEn ? "Save Bulletin (वृत्तपत्र जतन करा)" : "वृत्तपत्र जतन करा (Save)")
-          }
-        </FestiveButton>
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={() => {
+              const txt = formatNewsletterBroadcast(form, config);
+              openWhatsApp(txt);
+              if (onNotify) onNotify(isEn ? "Opening WhatsApp with newsletter..." : "व्हॉट्सॲपवर वृत्तपत्र पाठवण्यासाठी तयार!", "success");
+            }}
+            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow transition cursor-pointer"
+            title="थेट व्हॉट्सॲपवर पाठवा"
+          >
+            <Share2 className="w-3.5 h-3.5" />
+            <span>{isEn ? "Share on WhatsApp" : "व्हॉट्सॲपवर पाठवा"}</span>
+          </button>
+
+          <FestiveButton
+            onClick={handleSubmit}
+            icon={Save}
+            variant="primary"
+            size="md"
+            disabled={isSaving}
+          >
+            {isSaving 
+              ? (isEn ? "Saving..." : "जतन करत आहे...") 
+              : (isEn ? "Save Bulletin (वृत्तपत्र जतन करा)" : "वृत्तपत्र जतन करा (Save)")
+            }
+          </FestiveButton>
+        </div>
       }
     >
       <form onSubmit={handleSubmit} className="space-y-6 text-xs sm:text-sm">
@@ -119,6 +161,37 @@ const NewsletterManager = ({ config, onSaveNewsletter, onNotify }) => {
             <span className="bg-maroon-950 px-2 py-0.5 rounded border border-gold-500/30 text-gold-300">
               {isEn ? "Host:" : "यजमान:"} <strong>{isEn ? (form.todaysHostWingEn || form.todaysHostWing || "Select Wing") : (form.todaysHostWing || "विंग निवडा")}</strong>
             </span>
+          </div>
+        </div>
+
+        {/* Quick Auto-Fill from 10-Day Festival Schedule */}
+        <div className="bg-amber-50/80 border border-gold-300/80 rounded-xl p-3">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 mb-2">
+            <span className="font-black text-maroon-900 text-xs flex items-center gap-1.5">
+              <Sparkles className="w-3.5 h-3.5 text-festive-saffron" />
+              <span>{isEn ? "⚡ Quick-fill from 10-Day Festival Schedule:" : "⚡ १० दिवसांच्या वेळापत्रकातून त्वरित माहिती भरा:"}</span>
+            </span>
+            <span className="text-[11px] text-gray-600">
+              {isEn ? "Click any day to auto-populate fields" : "दिवसावर क्लिक केल्यास सर्व रकाने आपोआप भरले जातील"}
+            </span>
+          </div>
+          <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1">
+            {(config?.dailyAartiSchedule || config?.tenDaysAartiSchedule || []).map((item, idx) => (
+              <button
+                key={idx}
+                type="button"
+                onClick={() => handleAutoFillFromSchedule(idx)}
+                className={`flex-shrink-0 px-2.5 py-1 rounded-lg text-xs font-bold transition border cursor-pointer ${
+                  item.isCurrentDay 
+                    ? "bg-maroon-850 text-gold-200 border-gold-500 shadow-xs" 
+                    : "bg-white text-maroon-950 hover:bg-gold-100 border-gold-300"
+                }`}
+                title={item.tithi || `दिवस ${item.dayNumber || (idx + 1)}`}
+              >
+                <span>दिवस {item.dayNumber || (idx + 1)}</span>
+                {item.isCurrentDay && <span className="ml-1 text-[9px] bg-red-600 text-white px-1 py-0.2 rounded-full font-black">आज</span>}
+              </button>
+            ))}
           </div>
         </div>
 

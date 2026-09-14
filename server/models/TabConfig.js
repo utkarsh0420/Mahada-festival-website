@@ -6,7 +6,7 @@ const tabSettingSchema = new mongoose.Schema({
   labelEn: { type: String, required: true },
   order: { type: Number, default: 0 },
   approved: { type: Boolean, default: true }
-}, { _id: false });
+}, { _id: false, strict: false });
 
 const sidebarItemSchema = new mongoose.Schema({
   id: { type: String, required: true },
@@ -18,7 +18,7 @@ const sidebarItemSchema = new mongoose.Schema({
   order: { type: Number, default: 0 },
   targetSection: { type: String, default: "" },
   icon: { type: String, default: "layout" }
-}, { _id: false });
+}, { _id: false, strict: false });
 
 const dailyAartiItemSchema = new mongoose.Schema({
   dayNumber: { type: Number, required: true },
@@ -43,25 +43,41 @@ const dailyAartiItemSchema = new mongoose.Schema({
   cultural: { type: String, default: "" },
   culturalEn: { type: String, default: "" },
   isCurrentDay: { type: Boolean, default: false }
-}, { _id: false });
+}, { _id: false, strict: false });
 
 const newsletterSchema = new mongoose.Schema({
   edition: { type: String, default: "अंक १ (दिवस १ - श्री गणेश चतुर्थी)" },
   editionEn: { type: String, default: "Edition 1 (Day 1 - Ganesh Chaturthi)" },
   date: { type: String, default: "७ सप्टेंबर २०२६" },
   dateEn: { type: String, default: "7 September 2026" },
+  dateStr: { type: String, default: "" },
+  dateStrEn: { type: String, default: "" },
   headline: { type: String, default: "श्री गणरायाचे भव्य आगमन व प्राणप्रतिष्ठा सोहळा संपन्न!" },
   headlineEn: { type: String, default: "Grand Arrival & Murti Sthapana Ceremony Completed!" },
-  summary: { type: String, default: "सर्व ४ इमारतींमधील (G-नंदादेवी, H-निलगिरी, J-पूर्वांचल, K-गोवर्धन) भाविकांच्या उत्स्फूर्त उपस्थितीत बाप्पांचे वाजतगाजत आगमन झाले. आज संध्याकाळची महाआरती रात्री ८:०० वाजता संपन्न होईल." },
-  summaryEn: { type: String, default: "With enthusiastic participation from residents across all 4 buildings (G-Nandadevi, H-Nilgiri, J-Purvanchal, K-Govardhan), Bappa arrived to rhythmic Dhol-Tasha beats. Evening Maha Aarti will take place at 8:00 PM." },
+  summary: { type: String, default: "सर्व ४ इमारतींमधील भाविकांच्या उपस्थितीत बाप्पांचे आगमन झाले." },
+  summaryEn: { type: String, default: "" },
+  subheadline: { type: String, default: "" },
+  subheadlineEn: { type: String, default: "" },
   todayHost: { type: String, default: "G WING - नंदादेवी (Nandadevi)" },
   todayHostEn: { type: String, default: "G Wing - Nandadevi" },
+  todaysHostWing: { type: String, default: "G WING - नंदादेवी (Nandadevi)" },
+  todaysHostWingEn: { type: String, default: "G Wing - Nandadevi" },
   morningAarti: { type: String, default: "०८:३० AM" },
   eveningAarti: { type: String, default: "०८:०० PM" },
+  eveningAartiTime: { type: String, default: "०८:०० PM" },
+  hostLead: { type: String, default: "" },
+  hostLeadEn: { type: String, default: "" },
+  specialNote: { type: String, default: "" },
   safetyTip: { type: String, default: "कृपया वाहने नियुक्त पार्किंगमध्येच लावावीत. संकुल २४x७ सीसीटीव्ही निगराणीखाली आहे." },
   safetyTipEn: { type: String, default: "Please park vehicles only in designated spots. Complex is monitored 24x7 by CCTV." },
+  bappaDarshanQuote: { type: String, default: "" },
+  darshanPhotoUrl: { type: String, default: "" },
+  darshanPhotoCaption: { type: String, default: "" },
+  todaysHighlights: { type: [String], default: [] },
+  yesterdayHighlights: { type: [String], default: [] },
+  prasadSpecial: { type: String, default: "" },
   enabled: { type: Boolean, default: true }
-}, { _id: false });
+}, { _id: false, strict: false });
 
 const wingItemSchema = new mongoose.Schema({
   code: { type: String, required: true },
@@ -98,10 +114,12 @@ const galleryItemSchema = new mongoose.Schema({
 const pollOptionSchema = new mongoose.Schema({
   id: { type: Number, required: true },
   text: { type: String, required: true },
+  textEn: { type: String, default: "" },
   votes: { type: Number, default: 0 }
-}, { _id: false });
+}, { _id: false, strict: false });
 
 const pollSchema = new mongoose.Schema({
+  question: { type: String, default: "" },
   questionMr: { type: String, default: "संध्याकाळच्या महाआरतीची कोणती वेळ सर्वात सोयीस्कर आहे?" },
   questionEn: { type: String, default: "Which evening Maha Aarti timing is most convenient for residents?" },
   options: {
@@ -112,12 +130,18 @@ const pollSchema = new mongoose.Schema({
       { id: 3, text: "रात्री ०८:३० वाजता (Late Evening - 08:30 PM)", votes: 9 }
     ]
   },
-  isActive: { type: Boolean, default: true }
-}, { _id: false });
+  active: { type: Boolean, default: true },
+  isActive: { type: Boolean, default: true },
+  totalVotes: { type: Number, default: 0 }
+}, { _id: false, strict: false });
 
 const volunteerSevaSchema = new mongoose.Schema({
+  title: { type: String, default: "स्वयंसेवक सेवा नोंदणी" },
   titleMr: { type: String, default: "स्वयंसेवक सेवा नोंदणी" },
   titleEn: { type: String, default: "Volunteer Registration" },
+  description: { type: String, default: "" },
+  descriptionEn: { type: String, default: "" },
+  roles: { type: [mongoose.Schema.Types.Mixed], default: [] },
   sevaOptions: {
     type: [String],
     default: [
@@ -127,8 +151,9 @@ const volunteerSevaSchema = new mongoose.Schema({
       "माहिती व डिजिटल प्रसिद्धी"
     ]
   },
+  active: { type: Boolean, default: true },
   isActive: { type: Boolean, default: true }
-}, { _id: false });
+}, { _id: false, strict: false });
 
 const pillarSchema = new mongoose.Schema({
   icon: { type: String, default: "HeartHandshake" },
@@ -317,6 +342,22 @@ const tabConfigSchema = new mongoose.Schema({
     announcements: {
       type: tabSettingSchema,
       default: { enabled: true, approved: true, labelMr: "महत्वाच्या सूचना", labelEn: "Announcements", order: 18 }
+    },
+    prasad: {
+      type: tabSettingSchema,
+      default: { enabled: false, approved: false, labelMr: "महाप्रसाद", labelEn: "Maha Prasad", order: 19 }
+    },
+    visarjan: {
+      type: tabSettingSchema,
+      default: { enabled: false, approved: false, labelMr: "विसर्जन सोहळा", labelEn: "Visarjan Timings", order: 20 }
+    },
+    ownersNotice: {
+      type: tabSettingSchema,
+      default: { enabled: false, approved: false, labelMr: "वर्गणी व सभा अपडेट", labelEn: "Owners & Mandal Info", order: 21 }
+    },
+    mandalInfo: {
+      type: tabSettingSchema,
+      default: { enabled: true, approved: true, labelMr: "मंडळ माहिती व सुरक्षा", labelEn: "Mandal Info", order: 22 }
     }
   },
   newsletter: {
@@ -726,7 +767,7 @@ const tabConfigSchema = new mongoose.Schema({
     default: () => ({})
   },
   updatedAt: { type: Date, default: Date.now }
-});
+}, { strict: false });
 
 const TabConfig = mongoose.model("TabConfig", tabConfigSchema);
 export default TabConfig;

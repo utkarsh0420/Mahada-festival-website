@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import API from "../services/api";
+import { triggerLiveSync, subscribeLiveSync } from "../utils/liveSync";
 
 const ConfigContext = createContext();
 
@@ -160,6 +161,14 @@ export const ConfigProvider = ({ children }) => {
 
   useEffect(() => {
     fetchConfig();
+
+    const unsubscribe = subscribeLiveSync((payload) => {
+      if (payload?.entity === "config" || payload?.entity === "all") {
+        fetchConfig();
+      }
+    });
+
+    return () => unsubscribe();
   }, []);
 
   const saveLocal = (newConfig) => {
@@ -169,6 +178,7 @@ export const ConfigProvider = ({ children }) => {
     } catch (e) {
       console.error(e);
     }
+    triggerLiveSync("config", newConfig);
   };
 
   const updateTabs = async (tabs) => {

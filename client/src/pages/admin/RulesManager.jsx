@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { 
-  FileText, Save, Plus, Trash2, ShieldCheck, Volume2, Car, Sparkles, AlertTriangle 
+  FileText, Save, Plus, Trash2, ShieldCheck, Volume2, Car, Sparkles, AlertTriangle, Share2 
 } from "lucide-react";
 import { 
   FestiveCard, FestiveInput, FestiveTextarea, FestiveButton 
 } from "./FestiveControls";
 import { useLanguage } from "../../context/LanguageContext";
+import { formatSocietyRulesBroadcast, openWhatsApp } from "../../utils/whatsappFormatter";
 
 const ICON_OPTIONS_MR = [
   { value: "ShieldCheck", label: "सुरक्षा / शील्ड (ShieldCheck)" },
@@ -91,6 +92,18 @@ const RulesManager = ({ config, onSaveRules, onNotify }) => {
       badge={isEn ? "Society Rules" : "नियमावली"}
       action={
         <div className="flex items-center gap-2">
+          <FestiveButton
+            onClick={() => {
+              const text = formatSocietyRulesBroadcast(rules, config, isEn);
+              openWhatsApp(text);
+            }}
+            icon={Share2}
+            variant="gold"
+            size="md"
+            title={isEn ? "Share Rules on WhatsApp" : "नियमावली व्हॉट्सॲपवर शेअर करा"}
+          >
+            {isEn ? "Share on WhatsApp" : "व्हॉट्सॲपवर शेअर करा"}
+          </FestiveButton>
           <FestiveButton
             onClick={handleAddRule}
             icon={Plus}

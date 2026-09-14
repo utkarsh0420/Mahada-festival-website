@@ -16,7 +16,9 @@ export const ResidentPollsModal = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
 
   const poll = config?.poll || {};
-  const question = language === "mr" ? poll.question : (poll.questionEn || poll.question);
+  const question = language === "mr" 
+    ? (poll.questionMr || poll.question) 
+    : (poll.questionEn || poll.questionMr || poll.question);
   const options = poll.options || [];
 
   const handleVote = async () => {

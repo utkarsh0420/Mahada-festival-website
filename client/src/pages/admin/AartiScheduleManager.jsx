@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { 
   Flame, Save, Calendar, Clock, Building2, 
-  Sparkles, Check, CheckCircle2, Star, Globe, Info
+  Sparkles, Check, CheckCircle2, Star, Globe, Info, Share2
 } from "lucide-react";
 import { 
   FestiveCard, FestiveInput, FestiveButton, 
   FestiveBadge 
 } from "./FestiveControls";
 import { useLanguage } from "../../context/LanguageContext";
+import { formatAartiScheduleBroadcast, formatSingleAartiDay, openWhatsApp } from "../../utils/whatsappFormatter";
 
 const QUICK_WINGS_MR = [
   "G WING - नंदादेवी (Nandadevi)",
@@ -89,18 +90,34 @@ const AartiScheduleManager = ({ config, onSaveAartiSchedule, onNotify }) => {
       icon={Flame}
       badge={isEn ? "10-Day Schedule" : "१० दिवस वेळापत्रक"}
       action={
-        <FestiveButton
-          onClick={handleSave}
-          icon={Save}
-          variant="primary"
-          size="md"
-          disabled={isSaving}
-        >
-          {isSaving 
-            ? (isEn ? "Saving..." : "जतन करत आहे...") 
-            : (isEn ? "Save Schedule" : "वेळापत्रक जतन करा (Save)")
-          }
-        </FestiveButton>
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={() => {
+              const txt = formatAartiScheduleBroadcast(schedule, config);
+              openWhatsApp(txt);
+              if (onNotify) onNotify(isEn ? "Opening WhatsApp with 10-day schedule..." : "१० दिवसांचे आरती वेळापत्रक व्हॉट्सॲपवर पाठवण्यासाठी तयार!", "success");
+            }}
+            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow transition cursor-pointer"
+            title="संपूर्ण १० दिवसांचे वेळापत्रक व्हॉट्सॲपवर पाठवा"
+          >
+            <Share2 className="w-3.5 h-3.5" />
+            <span>{isEn ? "Share 10-Day Aarti" : "१० दिवस वेळापत्रक पाठवा"}</span>
+          </button>
+
+          <FestiveButton
+            onClick={handleSave}
+            icon={Save}
+            variant="primary"
+            size="md"
+            disabled={isSaving}
+          >
+            {isSaving 
+              ? (isEn ? "Saving..." : "जतन करत आहे...") 
+              : (isEn ? "Save Schedule" : "वेळापत्रक जतन करा (Save)")
+            }
+          </FestiveButton>
+        </div>
       }
     >
       {/* Language Switcher & Edit Mode Indicator */}
@@ -182,28 +199,45 @@ const AartiScheduleManager = ({ config, onSaveAartiSchedule, onNotify }) => {
                   )}
                 </div>
 
-                {/* Set as Today button */}
-                <button
-                  type="button"
-                  onClick={() => handleSetCurrentDay(idx)}
-                  className={`inline-flex items-center justify-center gap-1.5 px-3.5 py-2 sm:py-1.5 rounded-xl text-xs font-bold transition-all duration-200 border cursor-pointer w-full sm:w-auto flex-shrink-0 ${
-                    isToday
-                      ? "bg-gradient-to-r from-amber-600 to-amber-500 text-white border-amber-600 shadow-sm"
-                      : "bg-white text-maroon-900 hover:bg-gold-100 border-gold-300 shadow-xs"
-                  }`}
-                >
-                  {isToday ? (
-                    <>
-                      <Check className="w-3.5 h-3.5 stroke-[3]" />
-                      <span>{isEn ? "Today Selected" : "आजचा दिवस निवडला आहे"}</span>
-                    </>
-                  ) : (
-                    <>
-                      <Flame className="w-3.5 h-3.5 text-amber-600" />
-                      <span>{isEn ? "Set as Today" : "आजचा दिवस बनवा (Set Today)"}</span>
-                    </>
-                  )}
-                </button>
+                <div className="flex items-center gap-2 flex-wrap w-full sm:w-auto justify-end">
+                  {/* Share this day on WhatsApp */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const txt = formatSingleAartiDay(item, config);
+                      openWhatsApp(txt);
+                      if (onNotify) onNotify(isEn ? `Opening WhatsApp with Day ${item.dayNumber || idx + 1} Aarti...` : `दिवस ${item.dayNumber || idx + 1} आरती वेळ व्हॉट्सॲपवर पाठवण्यासाठी तयार!`, "success");
+                    }}
+                    className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white shadow-xs transition cursor-pointer"
+                    title={isEn ? "Share this day's aarti timings on WhatsApp" : "या दिवसाची आरती वेळ व्हॉट्सॲपवर पाठवा"}
+                  >
+                    <Share2 className="w-3.5 h-3.5" />
+                    <span>{isEn ? "Share Day" : "आरती वेळ पाठवा"}</span>
+                  </button>
+
+                  {/* Set as Today button */}
+                  <button
+                    type="button"
+                    onClick={() => handleSetCurrentDay(idx)}
+                    className={`inline-flex items-center justify-center gap-1.5 px-3.5 py-2 sm:py-1.5 rounded-xl text-xs font-bold transition-all duration-200 border cursor-pointer ${
+                      isToday
+                        ? "bg-gradient-to-r from-amber-600 to-amber-500 text-white border-amber-600 shadow-sm"
+                        : "bg-white text-maroon-900 hover:bg-gold-100 border-gold-300 shadow-xs"
+                    }`}
+                  >
+                    {isToday ? (
+                      <>
+                        <Check className="w-3.5 h-3.5 stroke-[3]" />
+                        <span>{isEn ? "Today Selected" : "आजचा दिवस निवडला आहे"}</span>
+                      </>
+                    ) : (
+                      <>
+                        <Flame className="w-3.5 h-3.5 text-amber-600" />
+                        <span>{isEn ? "Set as Today" : "आजचा दिवस बनवा (Set Today)"}</span>
+                      </>
+                    )}
+                  </button>
+                </div>
               </div>
 
               {/* Form Grid */}
