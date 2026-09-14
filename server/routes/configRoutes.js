@@ -55,8 +55,13 @@ router.put("/tabs", protectAdmin, async (req, res) => {
     let config = await getConfigDocument();
 
     if (tabs) {
+<<<<<<< HEAD
       const existingTabs = config.tabs?.toObject ? config.tabs.toObject() : config.tabs;
       config.tabs = { ...existingTabs, ...tabs };
+=======
+      config.tabs = { ...config.tabs.toObject(), ...tabs };
+      config.markModified("tabs");
+>>>>>>> 0b98e23043e7ef6831420f6bdadb0f1b3eb660a5
     }
     await saveConfigDocument(config);
 
@@ -114,8 +119,13 @@ router.put("/newsletter", protectAdmin, async (req, res) => {
     let config = await getConfigDocument();
 
     if (newsletter) {
+<<<<<<< HEAD
       const existing = config.newsletter?.toObject ? config.newsletter.toObject() : config.newsletter;
       config.newsletter = { ...existing, ...newsletter };
+=======
+      config.newsletter = { ...(config.newsletter?.toObject ? config.newsletter.toObject() : config.newsletter), ...newsletter };
+      config.markModified("newsletter");
+>>>>>>> 0b98e23043e7ef6831420f6bdadb0f1b3eb660a5
     }
     await saveConfigDocument(config);
 
@@ -139,6 +149,8 @@ router.put("/wings", protectAdmin, async (req, res) => {
     if (Array.isArray(wings)) {
       config.wings = wings;
       config.participatingWings = wings.map(w => w.code);
+      config.markModified("wings");
+      config.markModified("participatingWings");
     }
     await saveConfigDocument(config);
 
@@ -161,6 +173,7 @@ router.put("/rules", protectAdmin, async (req, res) => {
 
     if (Array.isArray(rules)) {
       config.rules = rules;
+      config.markModified("rules");
     }
     await saveConfigDocument(config);
 
@@ -183,6 +196,7 @@ router.put("/gallery", protectAdmin, async (req, res) => {
 
     if (Array.isArray(gallery)) {
       config.gallery = gallery;
+      config.markModified("gallery");
     }
     await saveConfigDocument(config);
 
@@ -204,8 +218,13 @@ router.put("/poll", protectAdmin, async (req, res) => {
     let config = await getConfigDocument();
 
     if (poll) {
+<<<<<<< HEAD
       const existing = config.poll?.toObject ? config.poll.toObject() : config.poll;
       config.poll = { ...existing, ...poll };
+=======
+      config.poll = { ...(config.poll?.toObject ? config.poll.toObject() : config.poll), ...poll };
+      config.markModified("poll");
+>>>>>>> 0b98e23043e7ef6831420f6bdadb0f1b3eb660a5
     }
     await saveConfigDocument(config);
 
@@ -258,8 +277,13 @@ router.put("/volunteer", protectAdmin, async (req, res) => {
     let config = await getConfigDocument();
 
     if (volunteerSeva) {
+<<<<<<< HEAD
       const existing = config.volunteerSeva?.toObject ? config.volunteerSeva.toObject() : config.volunteerSeva;
       config.volunteerSeva = { ...existing, ...volunteerSeva };
+=======
+      config.volunteerSeva = { ...(config.volunteerSeva?.toObject ? config.volunteerSeva.toObject() : config.volunteerSeva), ...volunteerSeva };
+      config.markModified("volunteerSeva");
+>>>>>>> 0b98e23043e7ef6831420f6bdadb0f1b3eb660a5
     }
     await saveConfigDocument(config);
 
@@ -282,10 +306,16 @@ router.put("/sidebar", protectAdmin, async (req, res) => {
 
     if (sidebarMenu) {
       config.sidebarMenu = sidebarMenu;
+      config.markModified("sidebarMenu");
     }
     if (sidebarSettings) {
+<<<<<<< HEAD
       const existing = config.sidebarSettings?.toObject ? config.sidebarSettings.toObject() : config.sidebarSettings;
       config.sidebarSettings = { ...existing, ...sidebarSettings };
+=======
+      config.sidebarSettings = { ...(config.sidebarSettings?.toObject ? config.sidebarSettings.toObject() : config.sidebarSettings), ...sidebarSettings };
+      config.markModified("sidebarSettings");
+>>>>>>> 0b98e23043e7ef6831420f6bdadb0f1b3eb660a5
     }
     await saveConfigDocument(config);
 
@@ -309,6 +339,7 @@ router.put("/aarti-schedule", protectAdmin, async (req, res) => {
 
     if (dailyAartiSchedule && Array.isArray(dailyAartiSchedule)) {
       config.dailyAartiSchedule = dailyAartiSchedule;
+      config.markModified("dailyAartiSchedule");
     }
     await saveConfigDocument(config);
 
@@ -330,8 +361,13 @@ router.put("/mandal-info", protectAdmin, async (req, res) => {
     let config = await getConfigDocument();
 
     if (mandalInfo) {
+<<<<<<< HEAD
       const existing = config.mandalInfo?.toObject ? config.mandalInfo.toObject() : config.mandalInfo;
       config.mandalInfo = { ...existing, ...mandalInfo };
+=======
+      config.mandalInfo = { ...(config.mandalInfo?.toObject ? config.mandalInfo.toObject() : config.mandalInfo), ...mandalInfo };
+      config.markModified("mandalInfo");
+>>>>>>> 0b98e23043e7ef6831420f6bdadb0f1b3eb660a5
     }
     await saveConfigDocument(config);
 

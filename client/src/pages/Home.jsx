@@ -6,20 +6,23 @@ import {
 import { useConfig } from "../context/ConfigContext";
 import { useLanguage } from "../context/LanguageContext";
 import API from "../services/api";
+import { subscribeLiveSync } from "../utils/liveSync";
 
 import MarqueeTicker from "../components/MarqueeTicker";
 import DailyNewsletter from "../components/DailyNewsletter";
 import EventScroller from "../components/EventScroller";
 import AartiCard from "../components/AartiCard";
 import TenDaysSchedule from "../components/TenDaysSchedule";
+import MahaprasadCard from "../components/MahaprasadCard";
+import VisarjanCard from "../components/VisarjanCard";
 import UpcomingEvents from "../components/UpcomingEvents";
 import PhotoGallery from "../components/PhotoGallery";
 import MandalRules from "../components/MandalRules";
 import EmergencyContacts from "../components/EmergencyContacts";
 import AboutMandal from "../components/AboutMandal";
 
-const Home = ({ onOpenWhatsAppQR, onOpenSidebar, onOpenUpcomingCalendar }) => {
-  const { config } = useConfig();
+const Home = ({ onOpenSidebar, onOpenUpcomingCalendar }) => {
+  const { config, refreshConfig } = useConfig();
   const { language, t } = useLanguage();
 
   const [selectedWing, setSelectedWing] = useState("All");
@@ -33,6 +36,38 @@ const Home = ({ onOpenWhatsAppQR, onOpenSidebar, onOpenUpcomingCalendar }) => {
     fetchEvents();
     fetchAnnouncements();
     fetchContacts();
+
+    // Live Cross-Component / Cross-Tab Sync Subscription
+    const unsubscribe = subscribeLiveSync(({ entity }) => {
+      if (entity === "events" || entity === "all") fetchEvents();
+      if (entity === "announcements" || entity === "all") fetchAnnouncements();
+      if (entity === "contacts" || entity === "all") fetchContacts();
+      if (entity === "config" || entity === "all") {
+        if (typeof refreshConfig === "function") refreshConfig();
+      }
+    });
+
+    // Background periodic poll every 15s so changes made by other admins reflect immediately
+    const pollInterval = setInterval(() => {
+      fetchEvents();
+      fetchAnnouncements();
+      fetchContacts();
+    }, 15000);
+
+    // Refresh instantly when user tabs back to this window
+    const handleFocus = () => {
+      fetchEvents();
+      fetchAnnouncements();
+      fetchContacts();
+      if (typeof refreshConfig === "function") refreshConfig();
+    };
+    window.addEventListener("focus", handleFocus);
+
+    return () => {
+      unsubscribe();
+      clearInterval(pollInterval);
+      window.removeEventListener("focus", handleFocus);
+    };
   }, [selectedWing, activeCategory]);
 
   const fetchEvents = async () => {
@@ -72,20 +107,6 @@ const Home = ({ onOpenWhatsAppQR, onOpenSidebar, onOpenUpcomingCalendar }) => {
     }
   };
 
-  // WhatsApp Share helper
-  const handleShareWhatsApp = (item) => {
-    const text = encodeURIComponent(
-      `🚩 *${language === "mr" ? (config?.mandalNameMr || "म्हाडा टॉवर्स उत्सव मंडळ, पिंपरी वाघेरे") : (config?.mandalNameEn || "MHADA Towers Utsav Mandal")}*\n\n` +
-      `📌 *${item.titleMr || item.titleEn || "कार्यक्रम"}*\n` +
-      `⏰ *वेळ/तारीख:* ${item.time || ""}\n` +
-      `📍 *ठिकाण:* ${item.venue || "मुख्य मंडप, म्हाडा टॉवर्स"}\n` +
-      (item.descriptionMr ? `📝 *तपशील:* ${item.descriptionMr}\n\n` : "\n") +
-      `सहभागी ४ इमारती: G (नंदादेवी) • H (निलगिरी) • J (पूर्वांचल) • K (गोवर्धन)\n` +
-      `गणपती बाप्पा मोरया! 🌸`
-    );
-    window.open(`https://api.whatsapp.com/send?text=${text}`, "_blank");
-  };
-
   const latestPinned = announcements.find((a) => a.isPinned) || announcements[0];
 
   return (
@@ -102,12 +123,12 @@ const Home = ({ onOpenWhatsAppQR, onOpenSidebar, onOpenUpcomingCalendar }) => {
         </div>
       )}
 
+
+
       {/* 2. DAILY DIGITAL NEWSLETTER BANNER */}
       {config?.tabs?.newsletter?.enabled !== false && (
         <DailyNewsletter />
       )}
-
-
 
       {/* 4. Event Scroller */}
       {config?.tabs?.cultural?.enabled !== false && (
@@ -116,7 +137,6 @@ const Home = ({ onOpenWhatsAppQR, onOpenSidebar, onOpenUpcomingCalendar }) => {
             events={events}
             activeCategory={activeCategory}
             onSelectCategory={(cat) => setActiveCategory(cat)}
-            onShareWhatsApp={handleShareWhatsApp}
           />
         </div>
       )}
@@ -126,25 +146,38 @@ const Home = ({ onOpenWhatsAppQR, onOpenSidebar, onOpenUpcomingCalendar }) => {
         
         {/* DAILY MAHA AARTI & LIVE COUNTDOWN */}
         {config?.tabs?.aarti?.enabled !== false && (
-          <AartiCard onShareWhatsApp={handleShareWhatsApp} />
+          <AartiCard />
         )}
 
         {/* 10-DAY FESTIVAL SCHEDULE */}
         {config?.tabs?.schedule?.enabled !== false && (
-          <TenDaysSchedule onShareWhatsApp={handleShareWhatsApp} />
+          <TenDaysSchedule />
+        )}
+
+        {/* MAHAPRASAD CARD (If prasad tab is enabled) */}
+        {config?.tabs?.prasad?.enabled && (
+          <div id="prasad-section" className="scroll-mt-16">
+            <MahaprasadCard />
+          </div>
+        )}
+
+        {/* VISARJAN TIMINGS & PROCESSION CARD (If visarjan tab is enabled) */}
+        {config?.tabs?.visarjan?.enabled && (
+          <div id="visarjan-section" className="scroll-mt-16">
+            <VisarjanCard />
+          </div>
         )}
 
         {/* UPCOMING & YEARLY EVENTS */}
         {(config?.tabs?.cultural?.enabled !== false || config?.tabs?.upcoming?.enabled !== false) && (
           <UpcomingEvents 
-            onShareWhatsApp={handleShareWhatsApp} 
             onOpenUpcomingCalendar={onOpenUpcomingCalendar} 
           />
         )}
 
         {/* PAST EVENT PHOTOS GALLERY */}
         {config?.tabs?.gallery?.enabled !== false && (
-          <PhotoGallery onShareWhatsApp={handleShareWhatsApp} />
+          <PhotoGallery />
         )}
 
         {/* SOCIETY RULES */}
@@ -159,9 +192,9 @@ const Home = ({ onOpenWhatsAppQR, onOpenSidebar, onOpenUpcomingCalendar }) => {
           <EmergencyContacts contacts={contacts} />
         )}
 
-        {/* ABOUT MANDAL & COMMUNITY SECURITY AT THE END */}
+        {/* MANDAL INFO, COMMITTEE & PILLARS */}
         {config?.tabs?.mandalInfo?.enabled !== false && (
-          <AboutMandal onShareWhatsApp={handleShareWhatsApp} />
+          <AboutMandal />
         )}
 
       </div>
@@ -187,19 +220,14 @@ const Home = ({ onOpenWhatsAppQR, onOpenSidebar, onOpenUpcomingCalendar }) => {
             <p className="text-xs sm:text-sm text-gray-700 leading-relaxed mb-5">
               {selectedAnnouncement.descriptionMr}
             </p>
-            <button
-              onClick={() => {
-                handleShareWhatsApp({
-                  titleMr: selectedAnnouncement.titleMr,
-                  time: "ताजी सूचना",
-                  venue: "म्हाडा टॉवर्स",
-                  descriptionMr: selectedAnnouncement.descriptionMr
-                });
-              }}
-              className="w-full py-2.5 bg-emerald-700 hover:bg-emerald-600 text-white rounded-xl text-xs font-bold shadow transition"
-            >
-              व्हॉट्सॲपवर पाठवा
-            </button>
+            <div className="flex justify-end">
+              <button
+                onClick={() => setSelectedAnnouncement(null)}
+                className="px-4 py-2 bg-maroon-850 hover:bg-maroon-800 text-gold-200 rounded-xl text-xs font-bold transition"
+              >
+                बंद करा (Close)
+              </button>
+            </div>
           </div>
         </div>
       )}

@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { 
-  Flame, Clock, Building, Sparkles, Share2, 
+  Flame, Clock, Building, Sparkles, 
   MapPin, CheckCircle2, Timer
 } from "lucide-react";
 import { useConfig } from "../context/ConfigContext";
 import { useLanguage } from "../context/LanguageContext";
 
-const AartiCard = ({ onShareWhatsApp }) => {
+const AartiCard = () => {
   const { config } = useConfig();
   const { language, t } = useLanguage();
 
@@ -16,7 +16,20 @@ const AartiCard = ({ onShareWhatsApp }) => {
   }
 
   const schedule = config?.dailyAartiSchedule || [];
-  const [activeDayIndex, setActiveDayIndex] = useState(0);
+  const [activeDayIndex, setActiveDayIndex] = useState(() => {
+    const initIdx = (config?.dailyAartiSchedule || []).findIndex((item) => item.isCurrentDay);
+    return initIdx !== -1 ? initIdx : 0;
+  });
+
+  // Sync active day whenever schedule or isCurrentDay changes in admin config
+  useEffect(() => {
+    if (schedule && schedule.length > 0) {
+      const currentIdx = schedule.findIndex((item) => item.isCurrentDay);
+      if (currentIdx !== -1) {
+        setActiveDayIndex(currentIdx);
+      }
+    }
+  }, [config?.dailyAartiSchedule]);
 
   // Daily Countdown Logic for Morning & Evening Aarti
   const [countdown, setCountdown] = useState({
@@ -88,17 +101,6 @@ const AartiCard = ({ onShareWhatsApp }) => {
 
   const activeDay = schedule[activeDayIndex] || schedule[0];
 
-  const handleShare = () => {
-    if (onShareWhatsApp && activeDay) {
-      onShareWhatsApp({
-        titleMr: `🪔 दैनिक महाआरती - ${activeDay.dateStr}`,
-        time: `सकाळी: ${activeDay.morningTime} | संध्याकाळी: ${activeDay.eveningTime}`,
-        venue: config.mandalNameMr || "मुख्य उत्सव मंडप, म्हाडा टॉवर्स संकुल",
-        descriptionMr: `यजमान इमारत: ${activeDay.hostWing}\nप्रमुख: ${activeDay.hostLead}\nसकाळची आरती: ${activeDay.morningRitual}\nसंध्याकाळची आरती: ${activeDay.eveningRitual}\nप्रसाद: ${activeDay.specialPrasad}\nसर्व इमारतींच्या रहिवाशांनी उपस्थित राहावे.\nगणपती बाप्पा मोरया!`
-      });
-    }
-  };
-
   return (
     <section id="aarti" className="scroll-mt-20 my-6">
       <div className="bg-gradient-to-br from-white via-[#FFFDF9] to-[#FAF5EB] rounded-3xl border-2 border-gold-400/80 shadow-xl overflow-hidden p-4 sm:p-7 md:p-8">
@@ -119,15 +121,6 @@ const AartiCard = ({ onShareWhatsApp }) => {
                 : "Every day at 08:30 AM and 08:00 PM at Central Festive Pandal"}
             </p>
           </div>
-
-          {/* WhatsApp Share Button */}
-          <button
-            onClick={handleShare}
-            className="self-start md:self-center inline-flex items-center gap-2 px-4 py-2 bg-emerald-700 hover:bg-emerald-600 text-white font-bold text-xs sm:text-sm rounded-xl shadow-md transition whitespace-nowrap flex-shrink-0"
-          >
-            <Share2 className="w-4 h-4 flex-shrink-0" />
-            <span className="whitespace-nowrap">{t("shareTimings")}</span>
-          </button>
         </div>
 
         {/* 1. DAILY COUNTDOWN TICKER FOR NEXT AARTI */}
@@ -211,6 +204,11 @@ const AartiCard = ({ onShareWhatsApp }) => {
                   }`}
                 >
                   <span className="whitespace-nowrap">{t("day")} {item.dayNumber}</span>
+                  {item.isCurrentDay && (
+                    <span className="ml-1 text-[10px] bg-red-600 text-white px-1.5 py-0.5 rounded-full font-bold">
+                      {language === "mr" ? "आज" : "Today"}
+                    </span>
+                  )}
                 </button>
               );
             })}
@@ -258,7 +256,7 @@ const AartiCard = ({ onShareWhatsApp }) => {
 
             {activeDay.specialPrasad && (
               <div className="mt-4 pt-3 border-t border-gold-200/60 flex items-center justify-between text-xs text-maroon-900 font-semibold bg-gold-50/60 p-2.5 rounded-xl">
-                <span>नैवेद्य / प्रसाद:</span>
+                <span>{language === "mr" ? "नैवेद्य / प्रसाद:" : "Offering / Prasad:"}</span>
                 <span className="font-bold text-maroon-950">
                   {language === "mr" ? activeDay.specialPrasad : (activeDay.specialPrasadEn || activeDay.specialPrasad)}
                 </span>
@@ -304,7 +302,7 @@ const AartiCard = ({ onShareWhatsApp }) => {
 
             {activeDay.specialPrasad && (
               <div className="mt-4 pt-3 border-t border-gold-200/60 flex items-center justify-between text-xs text-maroon-900 font-semibold bg-gold-50/60 p-2.5 rounded-xl">
-                <span>नैवेद्य / प्रसाद:</span>
+                <span>{language === "mr" ? "नैवेद्य / प्रसाद:" : "Offering / Prasad:"}</span>
                 <span className="font-bold text-maroon-950">
                   {language === "mr" ? activeDay.specialPrasad : (activeDay.specialPrasadEn || activeDay.specialPrasad)}
                 </span>

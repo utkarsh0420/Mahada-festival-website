@@ -1,17 +1,18 @@
 import React, { useState, useEffect } from "react";
 import { 
-  Calendar, Clock, MapPin, Share2, 
+  Calendar, Clock, MapPin, 
   ChevronRight, Building, Table, Plus, Edit, Trash2, Camera, Eye, X, Sparkles 
 } from "lucide-react";
 import { useLanguage } from "../context/LanguageContext";
 import { useConfig } from "../context/ConfigContext";
 import { useAuth } from "../context/AuthContext";
 import API from "../services/api";
+import { subscribeLiveSync } from "../utils/liveSync";
 
 export const UPCOMING_FESTIVAL_EVENTS = [];
 export const YEARLY_EVENTS = [];
 
-const UpcomingEvents = ({ onShareWhatsApp, onOpenUpcomingCalendar }) => {
+const UpcomingEvents = ({ onOpenUpcomingCalendar }) => {
   const { language, t } = useLanguage();
   const { config } = useConfig();
   const { admin } = useAuth();
@@ -47,6 +48,12 @@ const UpcomingEvents = ({ onShareWhatsApp, onOpenUpcomingCalendar }) => {
 
   useEffect(() => {
     fetchEvents();
+    const unsub = subscribeLiveSync(({ entity }) => {
+      if (entity === "events" || entity === "all") {
+        fetchEvents();
+      }
+    });
+    return () => unsub();
   }, [activeTab]);
 
   const handleDeleteCardEvent = async (id, title) => {
@@ -62,17 +69,6 @@ const UpcomingEvents = ({ onShareWhatsApp, onOpenUpcomingCalendar }) => {
       }
     } catch (err) {
       alert(language === "mr" ? "कार्यक्रम हटवताना त्रुटी आली" : "Failed to delete event");
-    }
-  };
-
-  const handleShareEvent = (ev) => {
-    if (onShareWhatsApp) {
-      onShareWhatsApp({
-        titleMr: `🚩 आगामी कार्यक्रम: ${ev.titleMr || ev.titleEn}`,
-        time: ev.dateStr || ev.dateMr || ev.time || "",
-        venue: ev.venue || ev.venueMr || ev.venueEn || "मुख्य मंडप",
-        descriptionMr: `${ev.descriptionMr || ev.descMr || ""}\nठिकाण: ${ev.venue || ev.venueMr || ""}\nसर्व ४ इमारतींच्या रहिवाशांना आग्रहाचे निमंत्रण!\n${config.mandalNameMr || "म्हाडा टॉवर्स उत्सव मंडळ, पिंपरी वाघेरे"}`
-      });
     }
   };
 
@@ -183,9 +179,17 @@ const UpcomingEvents = ({ onShareWhatsApp, onOpenUpcomingCalendar }) => {
                   )}
 
                   <div className="flex items-center justify-between gap-2 mb-2">
-                    <span className="text-[11px] font-black uppercase text-maroon-900 bg-gold-100 px-2.5 py-0.5 rounded-md border border-gold-300">
-                      {language === "mr" ? (ev.categoryMr || ev.category) : (ev.categoryEn || ev.category)}
-                    </span>
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span className="text-[11px] font-black uppercase text-maroon-900 bg-gold-100 px-2.5 py-0.5 rounded-md border border-gold-300">
+                        {language === "mr" ? (ev.categoryMr || ev.category) : (ev.categoryEn || ev.category)}
+                      </span>
+                      {ev.status === "live" && (
+                        <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-600 text-white animate-pulse">
+                          <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping" />
+                          {language === "mr" ? "सुरू आहे" : "LIVE"}
+                        </span>
+                      )}
+                    </div>
                     <div className="flex items-center gap-1 text-xs font-bold text-gray-700">
                       <Clock className="w-3.5 h-3.5 text-amber-600" />
                       <span>{language === "mr" ? (ev.dateStr || ev.dateMr || ev.time) : (ev.dateStrEn || ev.dateEn || ev.time)}</span>
@@ -237,14 +241,6 @@ const UpcomingEvents = ({ onShareWhatsApp, onOpenUpcomingCalendar }) => {
                       </button>
                     </div>
                   )}
-
-                  <button
-                    onClick={() => handleShareEvent(ev)}
-                    className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-700 hover:text-emerald-800 bg-emerald-50 hover:bg-emerald-100 px-3 py-1.5 rounded-xl border border-emerald-300 transition ml-auto cursor-pointer"
-                  >
-                    <Share2 className="w-3.5 h-3.5" />
-                    <span>{language === "mr" ? "व्हॉट्सॲपवर पाठवा" : "Share on WhatsApp"}</span>
-                  </button>
                 </div>
               </div>
             ))}

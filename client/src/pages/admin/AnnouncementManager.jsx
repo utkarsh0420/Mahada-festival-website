@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { 
   Plus, Trash2, Megaphone, Pin, Tag, AlertCircle, 
-  Edit2, X, Check, Globe, Sparkles 
+  Edit2, X, Check, Globe, Sparkles, Share2 
 } from "lucide-react";
 import API from "../../services/api";
 import { 
@@ -10,6 +10,8 @@ import {
   FestiveBadge 
 } from "./FestiveControls";
 import { useLanguage } from "../../context/LanguageContext";
+import { formatAnnouncementsBroadcast, formatSingleAnnouncement, openWhatsApp } from "../../utils/whatsappFormatter";
+import { triggerLiveSync } from "../../utils/liveSync";
 
 const CATEGORY_MAP_MR = {
   general: "सर्वसाधारण (General)",
@@ -108,6 +110,7 @@ const AnnouncementManager = ({ announcements, onRefresh, onNotify }) => {
           if (onNotify) onNotify(isEn ? "Notice updated successfully!" : "सूचना यशस्वीरीत्या अद्ययावत केली!", "success");
           handleCancelEdit();
           onRefresh();
+          triggerLiveSync("announcements");
         }
       } else {
         const res = await API.post("/announcements", payload);
@@ -125,6 +128,7 @@ const AnnouncementManager = ({ announcements, onRefresh, onNotify }) => {
             targetWings: ["All"]
           });
           onRefresh();
+          triggerLiveSync("announcements");
         }
       }
     } catch (err) {
@@ -141,6 +145,7 @@ const AnnouncementManager = ({ announcements, onRefresh, onNotify }) => {
       if (onNotify) onNotify(isEn ? "Notice removed from website" : "सूचना काढून टाकण्यात आली", "success");
       if (editingId === id) handleCancelEdit();
       onRefresh();
+      triggerLiveSync("announcements");
     } catch (err) {
       if (onNotify) onNotify(isEn ? "Failed to delete notice" : "सूचना काढताना त्रुटी आली", "error");
     }
@@ -330,6 +335,23 @@ const AnnouncementManager = ({ announcements, onRefresh, onNotify }) => {
             : "वेबसाईटवर सध्या प्रसिद्ध असलेल्या सूचनांची यादी. येथून आपण कोणत्याही सूचनेत तत्काळ संपादन (Edit) किंवा ती रद्द (Delete) करू शकता."
         }
         icon={Tag}
+        action={
+          announcements.length > 0 && (
+            <button
+              type="button"
+              onClick={() => {
+                const txt = formatAnnouncementsBroadcast(announcements, config);
+                openWhatsApp(txt);
+                if (onNotify) onNotify(isEn ? "Opening WhatsApp with all announcements..." : "सर्व सूचना व्हॉट्सॲपवर पाठवण्यासाठी तयार!", "success");
+              }}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow transition cursor-pointer"
+              title="सर्व सूचना व्हॉट्सॲपवर पाठवा"
+            >
+              <Share2 className="w-3.5 h-3.5" />
+              <span>{isEn ? "Share All on WhatsApp" : "सर्व सूचना व्हॉट्सॲपवर पाठवा"}</span>
+            </button>
+          )
+        }
       >
         {announcements.length === 0 ? (
           <p className="text-center py-6 text-xs text-stone-500 font-medium">
@@ -397,8 +419,21 @@ const AnnouncementManager = ({ announcements, onRefresh, onNotify }) => {
                     )}
                   </div>
 
-                  {/* Actions: Edit & Delete */}
+                  {/* Actions: WhatsApp Share, Edit & Delete */}
                   <div className="flex items-center gap-2 justify-end flex-shrink-0 pt-2 sm:pt-0 w-full sm:w-auto">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const txt = formatSingleAnnouncement(ann, config);
+                        openWhatsApp(txt);
+                        if (onNotify) onNotify(isEn ? "Opening WhatsApp with notice..." : "सूचना व्हॉट्सॲपवर पाठवण्यासाठी तयार!", "success");
+                      }}
+                      className="p-2 text-emerald-700 hover:text-emerald-800 bg-emerald-50 hover:bg-emerald-100 rounded-xl border border-emerald-300 transition cursor-pointer shadow-xs"
+                      title={isEn ? "Share this notice on WhatsApp" : "ही सूचना व्हॉट्सॲपवर पाठवा"}
+                    >
+                      <Share2 className="w-4 h-4" />
+                    </button>
+
                     <FestiveButton
                       onClick={() => handleStartEdit(ann)}
                       variant={isCurrentEditing ? "primary" : "secondary"}

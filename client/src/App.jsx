@@ -8,7 +8,6 @@ import Footer from "./components/Footer";
 import Home from "./pages/Home";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminLoginModal from "./components/AdminLoginModal";
-import WhatsAppJoinModal from "./components/WhatsAppJoinModal";
 import Sidebar from "./components/Sidebar";
 import AIBappaChatbot from "./components/AIBappaChatbot";
 import UpcomingEventsCalendarModal from "./components/UpcomingEventsCalendarModal";
@@ -26,7 +25,6 @@ const MainApp = () => {
 
   const [isAdminDashboardOpen, setIsAdminDashboardOpen] = useState(false);
   const [isAdminLoginModalOpen, setIsAdminLoginModalOpen] = useState(false);
-  const [isWhatsAppQROpen, setIsWhatsAppQROpen] = useState(false);
 
   // Upcoming & Yearly Events Calendar Modal State
   const [isUpcomingCalendarOpen, setIsUpcomingCalendarOpen] = useState(false);
@@ -142,14 +140,12 @@ const MainApp = () => {
         onOpenSidebar={() => setIsSidebarOpen(true)}
         onOpenAdminLogin={() => setIsAdminLoginModalOpen(true)}
         onOpenAdminDashboard={() => setIsAdminDashboardOpen(true)}
-        onOpenWhatsAppQR={() => setIsWhatsAppQROpen(true)}
         onOpenUpcomingCalendar={handleOpenUpcomingCalendar}
       />
 
       {/* Main Public Festival Portal */}
       <main className="flex-1">
         <Home
-          onOpenWhatsAppQR={() => setIsWhatsAppQROpen(true)}
           onOpenSidebar={() => setIsSidebarOpen(true)}
           onOpenUpcomingCalendar={handleOpenUpcomingCalendar}
         />
@@ -174,12 +170,6 @@ const MainApp = () => {
           setIsAdminLoginModalOpen(false);
           setIsAdminDashboardOpen(true);
         }}
-      />
-
-      {/* WhatsApp Community QR Modal */}
-      <WhatsAppJoinModal
-        isOpen={isWhatsAppQROpen}
-        onClose={() => setIsWhatsAppQROpen(false)}
       />
 
       {/* Upcoming & Yearly Events Calendar Structured Pop-Up Modal */}

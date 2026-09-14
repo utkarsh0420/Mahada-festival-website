@@ -13,7 +13,6 @@ import { ExpandableTabs } from "./ui/expandable-tabs";
 const Header = ({ 
   onOpenAdminLogin, 
   onOpenAdminDashboard, 
-  onOpenWhatsAppQR, 
   onOpenSidebar,
   onOpenUpcomingCalendar 
 }) => {
@@ -171,8 +170,21 @@ const Header = ({
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
                 <span className="text-[9px] sm:text-xs font-bold tracking-wider uppercase text-gold-300 bg-maroon-800/90 px-2 sm:px-2.5 py-0.5 rounded-full border border-gold-500/40 truncate">
-                  {config?.regNo ? `नोंदणी: ${config.regNo}` : "Regd No: १२४३/२०२५ - पुणे"}
+                  {config?.regNo 
+                    ? (language === "mr" ? `नोंदणी क्र: ${config.regNo}` : `Reg No: ${config.regNo}`) 
+                    : (language === "mr" ? "नोंदणी क्र: १२४३/२०२५ - पुणे" : "Reg No: 1243/2025 - Pune")}
                 </span>
+
+                {config?.festivalStatus && (
+                  <span className="inline-flex items-center gap-1 sm:gap-1.5 text-[9px] sm:text-xs font-black tracking-wide text-emerald-300 bg-emerald-950/90 px-2 sm:px-2.5 py-0.5 rounded-full border border-emerald-500/50 shadow-xs truncate animate-pulse">
+                    <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-emerald-400 flex-shrink-0" />
+                    <span className="truncate">
+                      {language === "mr" 
+                        ? config.festivalStatus 
+                        : (config.festivalStatus.includes("Live") ? config.festivalStatus : "Festival Live")}
+                    </span>
+                  </span>
+                )}
               </div>
 
               <h1 className="text-xs xs:text-sm sm:text-xl md:text-2xl font-black text-gold-300 tracking-tight leading-snug drop-shadow-sm font-heading truncate">
@@ -183,7 +195,11 @@ const Header = ({
               </h1>
 
               <p className="text-[11px] sm:text-xs text-gold-100/90 hidden sm:flex items-center gap-1 font-medium truncate">
-                <span>{config?.addressMr || "पिंपरी वाघेरे, पिंपरी चिंचवड, पुणे - ४११०१७"}</span>
+                <span>
+                  {language === "mr" 
+                    ? (config?.addressMr || "पिंपरी वाघेरे, पिंपरी चिंचवड, पुणे - ४११०१७") 
+                    : (config?.addressEn || "Pimpri Waghere, Pimpri Chinchwad, Pune - 411017")}
+                </span>
               </p>
             </div>
           </div>
@@ -193,7 +209,7 @@ const Header = ({
             <ExpandableTabs tabs={navTabs} />
           </nav>
 
-          {/* 3. Action Buttons (Language Switcher, WhatsApp, Admin) */}
+          {/* 3. Action Buttons (Language Switcher, Admin) */}
           <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
             
             {/* Language Switcher Toggle */}
@@ -204,16 +220,6 @@ const Header = ({
             >
               <Globe className="w-3.5 h-3.5 text-maroon-900 flex-shrink-0" />
               <span className="whitespace-nowrap">{language === "mr" ? "English" : "मराठी"}</span>
-            </button>
-
-            {/* WhatsApp Community Quick Button */}
-            <button
-              onClick={onOpenWhatsAppQR}
-              className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md transition whitespace-nowrap flex-shrink-0"
-              title="व्हॉट्सॲप कम्युनिटी QR कोड"
-            >
-              <QrCode className="w-3.5 h-3.5 flex-shrink-0" />
-              <span className="hidden md:inline whitespace-nowrap">{t("whatsappGroup")}</span>
             </button>
 
             {/* Admin Dashboard / Login Button */}
@@ -357,17 +363,6 @@ const Header = ({
           </div>
 
           <div className="pt-2 border-t border-gold-500/20 flex flex-col sm:flex-row gap-2">
-            <button
-              onClick={() => {
-                setMobileMenuOpen(false);
-                onOpenWhatsAppQR();
-              }}
-              className="w-full flex items-center justify-center gap-2 p-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow"
-            >
-              <QrCode className="w-4 h-4" />
-              <span>{t("whatsappGroup")}</span>
-            </button>
-
             {admin ? (
               <button
                 onClick={() => {

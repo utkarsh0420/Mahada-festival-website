@@ -3,12 +3,13 @@ import {
   ArrowLeft, ShieldCheck, Megaphone, Calendar, Phone, Settings, 
   Check, AlertTriangle, Menu, Flame, Sparkles, Building2, LogOut,
   SlidersHorizontal, LayoutDashboard, Newspaper, Image as ImageIcon,
-  FileText, BarChart2, Users, Info, Globe
+  FileText, BarChart2, Users, Info, Globe, MessageSquare, Send
 } from "lucide-react";
 import { useConfig } from "../context/ConfigContext";
 import { useAuth } from "../context/AuthContext";
 import { useLanguage } from "../context/LanguageContext";
 import API from "../services/api";
+import { triggerLiveSync } from "../utils/liveSync";
 
 import TabApprovals from "./admin/TabApprovals";
 import NewsletterManager from "./admin/NewsletterManager";
@@ -23,6 +24,7 @@ import ContactManager from "./admin/ContactManager";
 import MandalInfoManager from "./admin/MandalInfoManager";
 import SidebarManager from "./admin/SidebarManager";
 import GeneralSettings from "./admin/GeneralSettings";
+import WhatsAppBroadcastManager from "./admin/WhatsAppBroadcastManager";
 import { FestiveBadge, FestiveButton } from "./admin/FestiveControls";
 
 const AdminDashboard = ({ onClose }) => {
@@ -89,6 +91,11 @@ const AdminDashboard = ({ onClose }) => {
     fetchContacts();
   }, []);
 
+  const handleCloseDashboard = () => {
+    triggerLiveSync("all");
+    if (onClose) onClose();
+  };
+
   const handleToggleTab = async (tabKey) => {
     if (!config?.tabs || !config.tabs[tabKey]) return;
     const currentTab = config.tabs[tabKey];
@@ -105,6 +112,7 @@ const AdminDashboard = ({ onClose }) => {
     if (res.success) {
       notify(`टॅब स्थिती अद्ययावत केली (${currentTab.labelMr})`);
       refreshConfig();
+      triggerLiveSync("config");
     } else {
       notify("टॅब अद्ययावत करताना त्रुटी आली", "error");
     }
@@ -114,6 +122,7 @@ const AdminDashboard = ({ onClose }) => {
     const res = await updateGeneral(generalData);
     if (res.success) {
       notify("सर्वसाधारण सेटिंग्ज व स्क्रोलर मजकूर जतन केला!");
+      triggerLiveSync("config");
     } else {
       notify("सेटिंग्ज जतन करताना त्रुटी आली", "error");
     }
@@ -127,6 +136,7 @@ const AdminDashboard = ({ onClose }) => {
 
   const subTabs = [
     { id: "tabs", label: language === "mr" ? "टॅब मान्यता" : "Tab Approvals", sublabel: language === "mr" ? "Tabs Approval" : "टॅब व्यवस्थापन", icon: ShieldCheck, badge: `${activeTabsCount}/${totalTabsCount}` },
+    { id: "broadcast", label: language === "mr" ? "व्हॉट्सॲप ब्रॉडकास्ट" : "WhatsApp Broadcast", sublabel: language === "mr" ? "Broadcast" : "ब्रॉडकास्ट", icon: MessageSquare, badge: language === "mr" ? "थेट शेअर" : "Direct Share" },
     { id: "newsletter", label: language === "mr" ? "दैनिक वृत्तपत्र" : "Daily Newsletter", sublabel: language === "mr" ? "Newsletter" : "वृत्तपत्र", icon: Newspaper },
     { id: "wings", label: language === "mr" ? "सहभागी इमारती" : "Participating Wings", sublabel: language === "mr" ? "Wings" : "विंग्स", icon: Building2, badge: config?.wings?.length || 4 },
     { id: "aartiSchedule", label: language === "mr" ? "१० दिवस आरती वेळापत्रक" : "10-Day Aarti Schedule", sublabel: language === "mr" ? "Aarti Schedule" : "आरती", icon: Flame, badge: language === "mr" ? "१० दिवस" : "10 Days" },
@@ -155,7 +165,7 @@ const AdminDashboard = ({ onClose }) => {
             {/* Left Brand Lockup */}
             <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
               <button
-                onClick={onClose}
+                onClick={handleCloseDashboard}
                 className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 rounded-xl bg-gold-400 hover:bg-gold-300 text-maroon-950 font-black text-xs sm:text-sm shadow-md transition transform active:scale-95 border border-gold-500/50 whitespace-nowrap flex-shrink-0"
                 title={language === "mr" ? "वेबसाईटवर परत जा (Return to Website)" : "Return to Website"}
               >
@@ -192,6 +202,20 @@ const AdminDashboard = ({ onClose }) => {
             {/* Right Quick Controls */}
             <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
               
+              {/* WhatsApp Broadcast Quick Button */}
+              <button
+                onClick={() => setActiveSubTab("broadcast")}
+                className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl font-bold text-xs shadow-md transition transform active:scale-95 whitespace-nowrap flex-shrink-0 ${
+                  activeSubTab === "broadcast"
+                    ? "bg-emerald-500 text-white ring-2 ring-gold-400"
+                    : "bg-emerald-700 hover:bg-emerald-600 text-white"
+                }`}
+                title={language === "mr" ? "व्हॉट्सॲप ब्रॉडकास्ट केंद्र" : "WhatsApp Broadcast Hub"}
+              >
+                <MessageSquare className="w-3.5 h-3.5" />
+                <span className="hidden md:inline">{language === "mr" ? "व्हॉट्सॲप ब्रॉडकास्ट" : "WhatsApp Broadcast"}</span>
+              </button>
+
               {/* Language Switcher Toggle (Matches Website Screen) */}
               <button
                 onClick={toggleLanguage}
@@ -379,6 +403,15 @@ const AdminDashboard = ({ onClose }) => {
             <TabApprovals config={config} onToggleTab={handleToggleTab} />
           )}
 
+          {activeSubTab === "broadcast" && (
+            <WhatsAppBroadcastManager
+              config={config}
+              announcements={announcements}
+              events={events}
+              onNotify={notify}
+            />
+          )}
+
           {activeSubTab === "newsletter" && (
             <NewsletterManager
               config={config}
@@ -408,6 +441,7 @@ const AdminDashboard = ({ onClose }) => {
               announcements={announcements}
               onRefresh={fetchAnnouncements}
               onNotify={notify}
+              config={config}
             />
           )}
 
@@ -416,6 +450,7 @@ const AdminDashboard = ({ onClose }) => {
               events={events}
               onRefresh={fetchEvents}
               onNotify={notify}
+              config={config}
             />
           )}
 

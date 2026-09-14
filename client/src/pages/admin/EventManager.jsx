@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { 
   Plus, Trash2, Calendar, Clock, MapPin, 
   Building2, Sparkles, Tag, Flame, Edit2, X, Check, Globe,
-  Upload, Image as ImageIcon, Download, FolderUp, Camera, Eye
+  Upload, Image as ImageIcon, Download, FolderUp, Camera, Eye, Loader2, Share2
 } from "lucide-react";
 import API from "../../services/api";
 import { 
@@ -10,6 +10,8 @@ import {
   FestiveSelect, FestiveButton, FestiveBadge, FestiveToggle 
 } from "./FestiveControls";
 import { useLanguage } from "../../context/LanguageContext";
+import { formatEventsScheduleBroadcast, formatSingleEvent, openWhatsApp } from "../../utils/whatsappFormatter";
+import { triggerLiveSync } from "../../utils/liveSync";
 
 const EVENT_CATEGORIES_MR = [
   { value: "aarti", label: "दैनिक आरती (Aarti)" },
@@ -62,7 +64,7 @@ const compressImageFile = (file, maxWidth = 1000, quality = 0.75) => {
   });
 };
 
-const EventManager = ({ events, onRefresh, onNotify }) => {
+const EventManager = ({ events, onRefresh, onNotify, config }) => {
   const { language } = useLanguage();
   const isEn = language === "en";
 
@@ -90,6 +92,8 @@ const EventManager = ({ events, onRefresh, onNotify }) => {
     imageUrl: "",
     isHighlight: false
   });
+
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
 
   const handleStartEdit = (ev) => {
     setEditingId(ev._id);
@@ -140,7 +144,7 @@ const EventManager = ({ events, onRefresh, onNotify }) => {
     });
   };
 
-  // Upload image from local device
+  // Upload image to server/uploads/
   const handleImageUpload = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -148,13 +152,36 @@ const EventManager = ({ events, onRefresh, onNotify }) => {
       onNotify(isEn ? "Please select an image file (JPG, PNG, WebP)" : "कृपया वैध फोटो फाइल निवडा (JPG, PNG, WebP)", "error");
       return;
     }
+
+    setIsUploadingImage(true);
     try {
-      const compressed = await compressImageFile(file);
-      setForm(prev => ({ ...prev, imageUrl: compressed }));
-      onNotify(isEn ? "Photo attached from local device!" : "स्थानिक डिव्हाइसवरून फोटो जोडला गेला!", "success");
+      const formData = new FormData();
+      formData.append("image", file);
+      formData.append("category", "event");
+
+      const res = await API.post("/upload", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
+      if (res.data?.success && res.data.imageUrl) {
+        setForm(prev => ({ ...prev, imageUrl: res.data.imageUrl }));
+        onNotify(isEn ? "Photo uploaded to server uploads folder!" : "फोटो सर्व्हरवर (server/uploads/) यशस्वीरित्या अपलोड झाला!", "success");
+      } else {
+        throw new Error(res.data?.message || "Upload failed");
+      }
     } catch (err) {
-      console.error("Image read error:", err);
-      onNotify(isEn ? "Failed to read image file" : "फोटो लोड करताना त्रुटी आली", "error");
+      console.error("Image upload error:", err);
+      // Fallback to local compression if server encounters error
+      try {
+        const compressed = await compressImageFile(file);
+        setForm(prev => ({ ...prev, imageUrl: compressed }));
+        onNotify(isEn ? "Photo attached locally" : "स्थानिक फोटो जोडला गेला", "info");
+      } catch (fallbackErr) {
+        onNotify(isEn ? "Failed to read image file" : "फोटो लोड करताना त्रुटी आली", "error");
+      }
+    } finally {
+      setIsUploadingImage(false);
+      if (e.target) e.target.value = "";
     }
   };
 
@@ -196,6 +223,7 @@ const EventManager = ({ events, onRefresh, onNotify }) => {
         if (res.data?.success) {
           onNotify(isEn ? `Successfully imported ${res.data.count} events from device!` : `${res.data.count} कार्यक्रम फाइलमधून यशस्वीरीत्या आयात केले!`, "success");
           onRefresh();
+          triggerLiveSync("events");
         }
       } catch (err) {
         console.error("Import error:", err);
@@ -260,6 +288,7 @@ const EventManager = ({ events, onRefresh, onNotify }) => {
           onNotify(isEn ? "Event updated successfully!" : "कार्यक्रम यशस्वीरीत्या अद्ययावत केला!", "success");
           handleCancelEdit();
           onRefresh();
+          triggerLiveSync("events");
         }
       } else {
         const res = await API.post("/events", payload);
@@ -286,6 +315,7 @@ const EventManager = ({ events, onRefresh, onNotify }) => {
             isHighlight: false
           });
           onRefresh();
+          triggerLiveSync("events");
         }
       }
     } catch (err) {
@@ -302,6 +332,7 @@ const EventManager = ({ events, onRefresh, onNotify }) => {
         onNotify(isEn ? "Event removed from calendar" : "कार्यक्रम हटवला गेला", "success");
         if (editingId === id) handleCancelEdit();
         onRefresh();
+        triggerLiveSync("events");
       }
     } catch (err) {
       onNotify(isEn ? "Failed to delete event" : "हटवताना त्रुटी आली", "error");
@@ -576,17 +607,29 @@ const EventManager = ({ events, onRefresh, onNotify }) => {
                   </div>
                 </div>
               ) : (
-                <label className="flex flex-col items-center justify-center w-full sm:w-52 h-24 border-2 border-dashed border-gold-400 hover:border-gold-600 rounded-xl cursor-pointer bg-white hover:bg-gold-50/50 transition px-3 py-2 text-center group">
-                  <Upload className="w-5 h-5 text-amber-700 group-hover:scale-110 transition-transform mb-1" />
-                  <span className="text-[11px] font-bold text-maroon-900 leading-tight">
-                    {isEn ? "Select Photo / Poster" : "डिव्हाइसवरून फोटो निवडा"}
-                  </span>
-                  <span className="text-[9px] text-stone-500 mt-0.5">JPG, PNG, WebP</span>
+                <label className={`flex flex-col items-center justify-center w-full sm:w-52 h-24 border-2 border-dashed border-gold-400 hover:border-gold-600 rounded-xl cursor-pointer bg-white hover:bg-gold-50/50 transition px-3 py-2 text-center group ${isUploadingImage ? "opacity-60 cursor-not-allowed" : ""}`}>
+                  {isUploadingImage ? (
+                    <>
+                      <Loader2 className="w-5 h-5 text-amber-700 animate-spin mb-1" />
+                      <span className="text-[11px] font-bold text-maroon-900 leading-tight">
+                        {isEn ? "Uploading to server..." : "सर्व्हरवर सेव्ह होत आहे..."}
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      <Upload className="w-5 h-5 text-amber-700 group-hover:scale-110 transition-transform mb-1" />
+                      <span className="text-[11px] font-bold text-maroon-900 leading-tight">
+                        {isEn ? "Select Photo / Poster" : "डिव्हाइसवरून फोटो निवडा"}
+                      </span>
+                      <span className="text-[9px] text-stone-500 mt-0.5">JPG, PNG, WebP</span>
+                    </>
+                  )}
                   <input
                     type="file"
                     accept="image/*"
                     className="hidden"
                     onChange={handleImageUpload}
+                    disabled={isUploadingImage}
                   />
                 </label>
               )}
@@ -668,6 +711,22 @@ const EventManager = ({ events, onRefresh, onNotify }) => {
             : "वेबसाईटवर दर्शवले जाणारे सर्व सक्रिय कार्यक्रम. येथून आपण कोणत्याही कार्यक्रमामध्ये संपादन (Edit) करू शकता किंवा तो काढून टाकू शकता."
         }
         icon={Clock}
+        action={
+          events.length > 0 ? (
+            <FestiveButton
+              onClick={() => {
+                const text = formatEventsScheduleBroadcast(events, config, isEn);
+                openWhatsApp(text);
+              }}
+              icon={Share2}
+              variant="gold"
+              size="sm"
+              title={isEn ? "Share All Events on WhatsApp" : "सर्व कार्यक्रम व्हॉट्सॲपवर शेअर करा"}
+            >
+              {isEn ? "Share All on WhatsApp" : "सर्व कार्यक्रम शेअर करा"}
+            </FestiveButton>
+          ) : null
+        }
       >
         {events.length === 0 ? (
           <p className="text-center py-6 text-xs text-stone-500 font-medium">
@@ -750,8 +809,22 @@ const EventManager = ({ events, onRefresh, onNotify }) => {
                     </div>
                   </div>
 
-                  {/* Actions: Edit & Delete */}
+                  {/* Actions: WhatsApp, Edit & Delete */}
                   <div className="flex items-center gap-2 justify-end flex-shrink-0 pt-2 sm:pt-0 w-full sm:w-auto">
+                    <FestiveButton
+                      onClick={() => {
+                        const text = formatSingleEvent(ev, config, isEn);
+                        openWhatsApp(text);
+                      }}
+                      variant="gold"
+                      size="sm"
+                      icon={Share2}
+                      className="w-full sm:w-auto"
+                      title={isEn ? "Share Event on WhatsApp" : "कार्यक्रम व्हॉट्सॲपवर शेअर करा"}
+                    >
+                      {isEn ? "WhatsApp" : "व्हॉट्सॲप"}
+                    </FestiveButton>
+
                     <FestiveButton
                       onClick={() => handleStartEdit(ev)}
                       variant={isCurrentEditing ? "primary" : "secondary"}

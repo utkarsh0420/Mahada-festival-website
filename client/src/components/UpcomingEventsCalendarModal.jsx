@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { 
-  X, Calendar, Clock, MapPin, Building, Sparkles, Share2, 
+  X, Calendar, Clock, MapPin, Building, Sparkles, 
   Trophy, HeartHandshake, Search, Table, LayoutGrid, CheckCircle2, 
   CalendarDays, Award, Users, Filter, ChevronRight, Flame,
   Plus, Edit, Trash2, Camera, Upload, Download, Eye, AlertCircle
@@ -9,6 +9,7 @@ import { useLanguage } from "../context/LanguageContext";
 import { useConfig } from "../context/ConfigContext";
 import { useAuth } from "../context/AuthContext";
 import API from "../services/api";
+import { triggerLiveSync, subscribeLiveSync } from "../utils/liveSync";
 
 // Local image compression helper for uploading photos from device
 const compressImageFile = (file, maxWidth = 1000, quality = 0.75) => {
@@ -99,6 +100,12 @@ export const UpcomingEventsCalendarModal = ({ isOpen, onClose, defaultTab = "fes
   useEffect(() => {
     if (isOpen) {
       fetchEvents();
+      const unsub = subscribeLiveSync(({ entity }) => {
+        if (entity === "events" || entity === "all") {
+          fetchEvents();
+        }
+      });
+      return () => unsub();
     }
   }, [isOpen]);
 
@@ -257,6 +264,7 @@ export const UpcomingEventsCalendarModal = ({ isOpen, onClose, defaultTab = "fes
           showToast(language === "mr" ? "कार्यक्रम यशस्वीरीत्या अद्ययावत केला!" : "Event updated successfully!", "success");
           setIsFormOpen(false);
           fetchEvents();
+          triggerLiveSync("events");
         }
       } else {
         const res = await API.post("/events", eventFormData);
@@ -264,6 +272,7 @@ export const UpcomingEventsCalendarModal = ({ isOpen, onClose, defaultTab = "fes
           showToast(language === "mr" ? "नवीन कार्यक्रम कॅलेंडरमध्ये जोडला गेला!" : "New event added to calendar!", "success");
           setIsFormOpen(false);
           fetchEvents();
+          triggerLiveSync("events");
         }
       }
     } catch (err) {
@@ -286,6 +295,7 @@ export const UpcomingEventsCalendarModal = ({ isOpen, onClose, defaultTab = "fes
       if (res.data?.success) {
         showToast(language === "mr" ? "कार्यक्रम दिनदर्शिकेतून हटवला गेला!" : "Event removed from calendar!", "success");
         fetchEvents();
+        triggerLiveSync("events");
       }
     } catch (err) {
       console.error("Delete event error:", err);
@@ -293,20 +303,37 @@ export const UpcomingEventsCalendarModal = ({ isOpen, onClose, defaultTab = "fes
     }
   };
 
-  // Handle selecting photo from device inside modal
+  // Handle selecting photo from device inside modal (uploaded to server/uploads/)
   const handleImagePickerInModal = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
     if (!file.type.startsWith("image/")) {
-      alert(language === "mr" ? "कृपया वैध फोटो निवडा" : "Please select an image file");
+      alert(language === "mr" ? "कृपया वैध फोटो निवडा (JPG, PNG, WebP)" : "Please select an image file (JPG, PNG, WebP)");
       return;
     }
     try {
-      const compressed = await compressImageFile(file);
-      setEventFormData(prev => ({ ...prev, imageUrl: compressed }));
+      const formData = new FormData();
+      formData.append("image", file);
+      formData.append("category", "event");
+
+      const res = await API.post("/upload", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
+      if (res.data?.success && res.data.imageUrl) {
+        setEventFormData(prev => ({ ...prev, imageUrl: res.data.imageUrl }));
+      } else {
+        throw new Error(res.data?.message || "Upload failed");
+      }
     } catch (err) {
-      console.error(err);
-      alert(language === "mr" ? "फोटो वाचताना त्रुटी आली" : "Failed to load photo");
+      console.warn("Server upload fallback:", err);
+      try {
+        const compressed = await compressImageFile(file);
+        setEventFormData(prev => ({ ...prev, imageUrl: compressed }));
+      } catch (fallbackErr) {
+        console.error(fallbackErr);
+        alert(language === "mr" ? "फोटो वाचताना त्रुटी आली" : "Failed to load photo");
+      }
     }
   };
 
@@ -421,55 +448,6 @@ export const UpcomingEventsCalendarModal = ({ isOpen, onClose, defaultTab = "fes
 
   // Extract unique categories for upcoming/yearly filter
   const categories = ["all", ...new Set(sourceEvents.map(e => e.category))];
-
-  // WhatsApp Share helper for Upcoming/Yearly events
-  const handleShareEvent = (ev) => {
-    const mandalTitle = language === "mr" 
-      ? (config?.mandalNameMr || "म्हाडा टॉवर्स उत्सव मंडळ, पिंपरी वाघेरे")
-      : (config?.mandalNameEn || "MHADA Towers Utsav Mandal, Pimpri Waghere");
-
-    const eventTitle = language === "mr" ? ev.titleMr : ev.titleEn;
-    const eventDate = language === "mr" ? ev.dateMr : ev.dateEn;
-    const eventVenue = language === "mr" ? (ev.venueMr || "सोसायटी संकुल") : (ev.venueEn || "Society Pandal");
-    const eventHost = ev.hostWing ? (language === "mr" ? `\n🏢 यजमान / सहभाग: ${ev.hostWing}` : `\n🏢 Host/Wing: ${ev.hostWingEn}`) : "";
-    const eventDesc = language === "mr" ? ev.descMr : ev.descEn;
-
-    const message = encodeURIComponent(
-      `🚩 *${mandalTitle}*\n` +
-      `📅 *आगामी व वार्षिक कार्यक्रम पत्रिका*\n\n` +
-      `📌 *${eventTitle}*\n` +
-      `⏰ *दिनांक व वेळ:* ${eventDate}\n` +
-      `📍 *ठिकाण:* ${eventVenue}${eventHost}\n` +
-      `📝 *तपशील:* ${eventDesc}\n\n` +
-      `सर्व ४ इमारतींच्या (G, H, J, K) सन्माननीय रहिवाशांना आग्रहाचे निमंत्रण!\n` +
-      `गणपती बाप्पा मोरया! 🌸`
-    );
-
-    window.open(`https://api.whatsapp.com/send?text=${message}`, "_blank");
-  };
-
-  // WhatsApp Share helper for 10 Days Schedule
-  const handleShare10Day = (item) => {
-    const mandalTitle = language === "mr" 
-      ? (config?.mandalNameMr || "म्हाडा टॉवर्स उत्सव मंडळ, पिंपरी वाघेरे")
-      : (config?.mandalNameEn || "MHADA Towers Utsav Mandal, Pimpri Waghere");
-
-    const message = encodeURIComponent(
-      `🚩 *${mandalTitle}*\n` +
-      `📅 *१० दिवसांचे वेळापत्रक - दिवस ${item.day}*\n\n` +
-      `📌 *${language === "mr" ? item.tithi : item.tithiEn}*\n` +
-      `🗓️ *तारीख:* ${language === "mr" ? item.date : item.dateEn}\n` +
-      `🪔 *सकाळ महाआरती:* ${item.morningTime} | *संध्याकाळ महाआरती:* ${item.eveningTime}\n` +
-      `🏢 *यजमान इमारत:* ${language === "mr" ? item.hostWing : item.hostWingEn}\n` +
-      `👤 *प्रतिनिधी:* ${item.hostLead}\n` +
-      `🌸 *विशेष पूजा:* ${language === "mr" ? item.ritual : item.ritualEn}\n` +
-      `🎭 *सांस्कृतिक:* ${language === "mr" ? item.cultural : item.culturalEn}\n\n` +
-      `सर्व ४ इमारतींच्या (G, H, J, K) भाविकांनी उपस्थित राहावे!\n` +
-      `गणपती बाप्पा मोरया! 🌸`
-    );
-
-    window.open(`https://api.whatsapp.com/send?text=${message}`, "_blank");
-  };
 
   const getCategoryColor = (category) => {
     switch (category) {
@@ -804,9 +782,6 @@ export const UpcomingEventsCalendarModal = ({ isOpen, onClose, defaultTab = "fes
                             <span>{language === "mr" ? "सांस्कृतिक कार्यक्रम" : "Cultural Program"}</span>
                           </div>
                         </th>
-                        <th className="py-3 px-3 text-center whitespace-nowrap">
-                          <Share2 className="w-3.5 h-3.5 text-gold-400 mx-auto" />
-                        </th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gold-200 text-xs text-gray-800">
@@ -876,18 +851,6 @@ export const UpcomingEventsCalendarModal = ({ isOpen, onClose, defaultTab = "fes
                               {language === "mr" ? item.cultural : item.culturalEn}
                             </p>
                           </td>
-
-                          {/* WhatsApp Share */}
-                          <td className="py-3 px-3 align-top text-center">
-                            <button
-                              onClick={() => handleShare10Day(item)}
-                              className="inline-flex items-center justify-center p-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 hover:text-emerald-800 border border-emerald-300 shadow-2xs transition active:scale-95 group"
-                              title="व्हॉट्सॲपवर पाठवा (Share on WhatsApp)"
-                              aria-label="Share on WhatsApp"
-                            >
-                              <Share2 className="w-4 h-4 group-hover:scale-110 transition-transform" />
-                            </button>
-                          </td>
                         </tr>
                       ))}
                     </tbody>
@@ -941,13 +904,6 @@ export const UpcomingEventsCalendarModal = ({ isOpen, onClose, defaultTab = "fes
 
                     <div className="flex items-center justify-between pt-1 border-t border-gold-100">
                       <span className="text-[11px] text-gray-600 font-medium">समन्वयक: <strong>{item.hostLead}</strong></span>
-                      <button
-                        onClick={() => handleShare10Day(item)}
-                        className="inline-flex items-center gap-1.5 py-1.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-2xs transition"
-                      >
-                        <Share2 className="w-3.5 h-3.5" />
-                        <span>व्हॉट्सॲपवर पाठवा</span>
-                      </button>
                     </div>
                   </div>
                 ))}
@@ -1007,9 +963,6 @@ export const UpcomingEventsCalendarModal = ({ isOpen, onClose, defaultTab = "fes
                                 <Award className="w-3.5 h-3.5 text-gold-400" />
                                 <span>{language === "mr" ? "तपशील व नियमावली" : "Details & Guidelines"}</span>
                               </div>
-                            </th>
-                            <th className="py-3 px-3 text-center whitespace-nowrap">
-                              <Share2 className="w-3.5 h-3.5 text-gold-400 mx-auto" />
                             </th>
                             {admin && (
                               <th className="py-3 px-3 text-center whitespace-nowrap">
@@ -1085,17 +1038,6 @@ export const UpcomingEventsCalendarModal = ({ isOpen, onClose, defaultTab = "fes
                                 <p className="text-xs text-gray-700 leading-relaxed font-normal">
                                   {language === "mr" ? ev.descMr : ev.descEn}
                                 </p>
-                              </td>
-
-                              <td className="py-3.5 px-4 align-top text-center">
-                                <button
-                                  onClick={() => handleShareEvent(ev)}
-                                  className="inline-flex items-center justify-center p-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 hover:text-emerald-800 border border-emerald-300 shadow-2xs transition active:scale-95 group cursor-pointer"
-                                  title="व्हॉट्सॲपवर पाठवा (Share on WhatsApp)"
-                                  aria-label="Share on WhatsApp"
-                                >
-                                  <Share2 className="w-4 h-4 group-hover:scale-110 transition-transform" />
-                                </button>
                               </td>
 
                               {admin && (
@@ -1190,36 +1132,26 @@ export const UpcomingEventsCalendarModal = ({ isOpen, onClose, defaultTab = "fes
                           </div>
                         </div>
 
-                        <div className="pt-1 flex items-center justify-between gap-2 flex-wrap">
-                          {admin && (
-                            <div className="flex items-center gap-1.5">
-                              <button
-                                onClick={() => handleOpenEdit(ev)}
-                                className="inline-flex items-center gap-1 py-1.5 px-3 rounded-xl bg-amber-100 hover:bg-amber-200 text-amber-950 font-bold text-xs border border-amber-300 transition active:scale-95 cursor-pointer shadow-2xs"
-                                title={language === "mr" ? "कार्यक्रम संपादन करा" : "Edit Event"}
-                              >
-                                <Edit className="w-3.5 h-3.5 text-amber-800" />
-                                <span>{language === "mr" ? "संपादन" : "Edit"}</span>
-                              </button>
-                              <button
-                                onClick={() => handleDeleteEvent(ev.id || ev._id, ev.titleMr)}
-                                className="inline-flex items-center gap-1 py-1.5 px-2.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-xs border border-rose-300 transition active:scale-95 cursor-pointer shadow-2xs"
-                                title={language === "mr" ? "कार्यक्रम हटवा" : "Delete Event"}
-                              >
-                                <Trash2 className="w-3.5 h-3.5" />
-                                <span>{language === "mr" ? "हटवा" : "Delete"}</span>
-                              </button>
-                            </div>
-                          )}
-
-                          <button
-                            onClick={() => handleShareEvent(ev)}
-                            className="inline-flex items-center justify-center gap-1.5 py-2 px-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-xs transition active:scale-95 ml-auto cursor-pointer"
-                          >
-                            <Share2 className="w-3.5 h-3.5" />
-                            <span>व्हॉट्सॲपवर पाठवा</span>
-                          </button>
-                        </div>
+                        {admin && (
+                          <div className="pt-1 flex items-center gap-1.5 flex-wrap">
+                            <button
+                              onClick={() => handleOpenEdit(ev)}
+                              className="inline-flex items-center gap-1 py-1.5 px-3 rounded-xl bg-amber-100 hover:bg-amber-200 text-amber-950 font-bold text-xs border border-amber-300 transition active:scale-95 cursor-pointer shadow-2xs"
+                              title={language === "mr" ? "कार्यक्रम संपादन करा" : "Edit Event"}
+                            >
+                              <Edit className="w-3.5 h-3.5 text-amber-800" />
+                              <span>{language === "mr" ? "संपादन" : "Edit"}</span>
+                            </button>
+                            <button
+                              onClick={() => handleDeleteEvent(ev.id || ev._id, ev.titleMr)}
+                              className="inline-flex items-center gap-1 py-1.5 px-2.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-xs border border-rose-300 transition active:scale-95 cursor-pointer shadow-2xs"
+                              title={language === "mr" ? "कार्यक्रम हटवा" : "Delete Event"}
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                              <span>{language === "mr" ? "हटवा" : "Delete"}</span>
+                            </button>
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>
@@ -1241,26 +1173,10 @@ export const UpcomingEventsCalendarModal = ({ isOpen, onClose, defaultTab = "fes
             </span>
           </div>
 
-          <div className="flex items-center gap-2 w-full sm:w-auto">
-            <button
-              onClick={() => {
-                const text = encodeURIComponent(
-                  `🚩 *${language === "mr" ? (config?.mandalNameMr || "म्हाडा टॉवर्स उत्सव मंडळ") : (config?.mandalNameEn || "MHADA Towers Utsav Mandal")}*\n\n` +
-                  `📅 *१० दिवसांचे वेळापत्रक व आगामी वार्षिक कार्यक्रम पत्रिका*\n` +
-                  `४ इमारती: G (नंदादेवी) • H (निलगिरी) • J (पूर्वांचल) • K (गोवर्धन)\n\n` +
-                  `संपूर्ण वेळापत्रक वेबसाइटवर उपलब्ध आहे. गणपती बाप्पा मोरया! 🌸`
-                );
-                window.open(`https://api.whatsapp.com/send?text=${text}`, "_blank");
-              }}
-              className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-600 text-white font-bold text-xs shadow transition active:scale-95 whitespace-nowrap cursor-pointer"
-            >
-              <Share2 className="w-3.5 h-3.5" />
-              <span>{language === "mr" ? "वेळापत्रक शेअर करा" : "Share All on WhatsApp"}</span>
-            </button>
-
+          <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
             <button
               onClick={onClose}
-              className="px-4 py-2 rounded-xl bg-maroon-850 hover:bg-maroon-800 text-gold-200 font-bold text-xs border border-gold-500/40 shadow transition active:scale-95 cursor-pointer"
+              className="w-full sm:w-auto px-5 py-2 rounded-xl bg-maroon-850 hover:bg-maroon-800 text-gold-200 font-bold text-xs border border-gold-500/40 shadow transition active:scale-95 cursor-pointer"
             >
               {language === "mr" ? "बंद करा" : "Close"}
             </button>

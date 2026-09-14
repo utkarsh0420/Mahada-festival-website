@@ -95,8 +95,8 @@ const Sidebar = ({
 
   const settings = config?.sidebarSettings || {};
   const wingsCodes = config?.wings && config.wings.length > 0 
-    ? config.wings.map(w => w.nameMr || `${w.code} विंग`).join(" • ")
-    : (config?.participatingWings || ["G", "H", "J", "K"]).map(w => `${w} विंग`).join(" • ");
+    ? config.wings.map(w => (language === "mr" ? (w.nameMr || `${w.code} विंग`) : (w.nameEn || `${w.code} Wing`))).join(" • ")
+    : (config?.participatingWings || ["G", "H", "J", "K"]).map(w => (language === "mr" ? `${w} विंग` : `${w} Wing`)).join(" • ");
 
   return (
     <div className="fixed inset-0 z-50 flex">
@@ -187,7 +187,9 @@ const Sidebar = ({
               {wingsCodes}
             </p>
             <p className="text-[10px] text-gray-600 mt-0.5">
-              {settings.bottomCardTagline || "॥ ४ विंग्स, एकच परिवार - सहकार्य • शिस्त • अखंड भक्ती ॥"}
+              {language === "mr" 
+                ? (settings.bottomCardTagline || "॥ ४ विंग्स, एकच परिवार - सहकार्य • शिस्त • अखंड भक्ती ॥")
+                : "॥ 4 Wings, One Family - Cooperation • Discipline • Devotion ॥"}
             </p>
           </div>
         </div>
